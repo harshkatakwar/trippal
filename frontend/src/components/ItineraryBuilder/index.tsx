@@ -1,4 +1,3 @@
-
 import { MapPin, Clock, IndianRupee, Sunrise, Sun, Moon, Building } from 'lucide-react';
 import type { DayPlan, Activity } from '../../types/travel';
 
@@ -9,107 +8,100 @@ interface ItineraryBuilderProps {
 export function ItineraryBuilder({ itinerary }: ItineraryBuilderProps) {
   if (!itinerary || itinerary.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 rounded-xl p-8" style={{ background: 'rgba(255,255,255,0.02)' }}>
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(79,70,229,0.15)' }}>
-          <MapPin size={28} style={{ color: '#818cf8' }} />
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 rounded-xl p-8" style={{ background: 'rgba(255,255,255,0.02)' }} role="status">
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-indigo-500/15" aria-hidden="true">
+          <MapPin size={28} className="text-indigo-400" />
         </div>
         <div className="text-center">
-          <p className="font-semibold mb-1" style={{ color: 'rgba(255,255,255,0.7)' }}>No itinerary yet</p>
-          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Chat with TripPal to plan your perfect trip!</p>
+          <p className="font-semibold mb-1 text-white/70">No itinerary yet</p>
+          <p className="text-sm text-white/40">Chat with TripPal to plan your perfect trip!</p>
         </div>
       </div>
     );
   }
 
   const renderActivity = (activity: Activity) => (
-    <div
+    <article
       key={activity.placeId || activity.name}
-      className="rounded-xl p-3.5 transition-all duration-200 border"
-      style={{
-        background: 'rgba(255,255,255,0.04)',
-        borderColor: 'rgba(255,255,255,0.06)',
-      }}
+      className="rounded-xl p-3.5 transition-all duration-200 border bg-white/5 border-white/10"
+      tabIndex={0}
     >
-      <div className="flex justify-between items-start mb-2">
-        <h4 className="font-semibold text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>{activity.name}</h4>
+      <header className="flex justify-between items-start mb-2">
+        <h5 className="font-semibold text-sm text-white/90">{activity.name}</h5>
         <span
-          className="flex items-center text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2"
-          style={{ background: 'rgba(79,70,229,0.2)', color: '#a5b4fc' }}
+          className="flex items-center text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2 bg-indigo-500/20 text-indigo-300"
+          aria-label={`Cost: ${activity.costInr || 0} rupees`}
         >
-          <IndianRupee size={10} className="mr-0.5" />
+          <IndianRupee size={10} className="mr-0.5" aria-hidden="true" />
           {activity.costInr?.toLocaleString() || '0'}
         </span>
-      </div>
-      <p className="text-xs mb-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{activity.description}</p>
+      </header>
+      <p className="text-xs mb-3 leading-relaxed text-white/50">{activity.description}</p>
       
-      <div className="flex items-center gap-3 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+      <footer className="flex items-center gap-3 text-xs text-white/40 flex-wrap">
         {activity.durationMinutes && (
-          <div className="flex items-center">
-            <Clock size={11} className="mr-1" />
+          <div className="flex items-center" aria-label={`Duration: ${activity.durationMinutes} minutes`}>
+            <Clock size={11} className="mr-1" aria-hidden="true" />
             {activity.durationMinutes}m
           </div>
         )}
         {activity.location && (
-          <div className="flex items-center">
-            <MapPin size={11} className="mr-1" />
+          <div className="flex items-center" aria-label={`Location: ${activity.location}`}>
+            <MapPin size={11} className="mr-1" aria-hidden="true" />
             <span className="truncate max-w-[140px]">{activity.location}</span>
           </div>
         )}
         {activity.rating > 0 && (
-          <div className="flex items-center">
-            ⭐ {activity.rating}
+          <div className="flex items-center" aria-label={`Rating: ${activity.rating} stars`}>
+            <span aria-hidden="true">⭐</span> {activity.rating}
           </div>
         )}
-      </div>
-    </div>
+      </footer>
+    </article>
   );
 
   const renderTimeSlot = (title: string, activities: Activity[], Icon: any, gradientFrom: string, gradientTo: string) => {
     if (!activities || activities.length === 0) return null;
     return (
-      <div>
-        <div className="flex items-center gap-2 mb-2.5">
-          <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }}>
+      <section aria-labelledby={`timeslot-${title.toLowerCase()}`}>
+        <header className="flex items-center gap-2 mb-2.5">
+          <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})` }} aria-hidden="true">
             <Icon size={13} className="text-white" />
           </div>
-          <h4 className="text-xs font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.5)' }}>{title}</h4>
-        </div>
+          <h4 id={`timeslot-${title.toLowerCase()}`} className="text-xs font-bold uppercase tracking-wider text-white/50">{title}</h4>
+        </header>
         <div className="grid gap-2.5">{activities.map(renderActivity)}</div>
-      </div>
+      </section>
     );
   };
 
   return (
-    <div className="flex-1 overflow-y-auto space-y-5 pr-1">
+    <div className="flex-1 overflow-y-auto space-y-5 pr-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md" tabIndex={0} aria-label="Generated Itinerary">
       {itinerary.map((dayPlan) => (
-        <div
+        <article
           key={dayPlan.day}
-          className="rounded-2xl border p-5"
-          style={{
-            background: 'rgba(255,255,255,0.03)',
-            borderColor: 'rgba(255,255,255,0.08)',
-          }}
+          className="rounded-2xl border p-5 bg-white/5 border-white/10"
         >
           {/* Day Header */}
-          <div className="flex justify-between items-end mb-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <header className="flex justify-between items-end mb-4 pb-3 border-b border-white/10">
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', color: 'white' }}>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white">
                   Day {dayPlan.day}
                 </span>
                 {dayPlan.theme && (
-                  <span className="text-xs font-medium" style={{ color: '#a5b4fc' }}>{dayPlan.theme}</span>
+                  <span className="text-xs font-medium text-indigo-300">{dayPlan.theme}</span>
                 )}
               </div>
-              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <p className="text-sm text-white/40">
                 {new Date(dayPlan.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
               </p>
             </div>
-            <div className="text-sm font-bold flex items-center" style={{ color: '#a5b4fc' }}>
-              <IndianRupee size={14} className="mr-0.5" />
+            <div className="text-sm font-bold flex items-center text-indigo-300" aria-label={`Estimated daily cost: ${dayPlan.estimatedCostInr || 0} rupees`}>
+              <IndianRupee size={14} className="mr-0.5" aria-hidden="true" />
               {dayPlan.estimatedCostInr?.toLocaleString() || '—'}
             </div>
-          </div>
+          </header>
 
           {/* Time Slots */}
           <div className="space-y-4">
@@ -120,13 +112,13 @@ export function ItineraryBuilder({ itinerary }: ItineraryBuilderProps) {
           
           {/* Accommodation */}
           {dayPlan.accommodation && (
-            <div className="mt-4 pt-3 flex items-center gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              <Building size={14} style={{ color: '#a5b4fc' }} />
-              <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.6)' }}>Stay:</span>
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{dayPlan.accommodation}</span>
-            </div>
+            <footer className="mt-4 pt-3 flex items-center gap-2 border-t border-white/10">
+              <Building size={14} className="text-indigo-300" aria-hidden="true" />
+              <span className="text-xs font-semibold text-white/60">Stay:</span>
+              <span className="text-xs text-white/40">{dayPlan.accommodation}</span>
+            </footer>
           )}
-        </div>
+        </article>
       ))}
     </div>
   );

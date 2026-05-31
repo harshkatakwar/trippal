@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { classifyAndExtract } from '../services/intentPipeline.js';
 import { z } from 'zod';
+import { sanitizeInput } from '../utils/pureLogic.js';
 
 const router = Router();
 
@@ -13,16 +14,19 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
     const validatedBody = IntentRequestSchema.parse(req.body);
     
+    const sanitizedUserMessage = sanitizeInput(validatedBody.userMessage);
+    const sanitizedHistory = validatedBody.conversationHistory.map(h => sanitizeInput(h));
+
     // Check for obvious prompt injections
-    const lowerMessage = validatedBody.userMessage.toLowerCase();
-    if (lowerMessage.includes('ignore previous') || lowerMessage.includes('you are now')) {
+    const lowerMessage = sanitizedUserMessage.toLowerCase();
+    if (lowerMessage.includes('ignore previous') || lowerMessage.includes('you are now') || lowerMessage.includes('system prompt')) {
        res.status(400).json({ error: 'Invalid input detected' });
        return;
     }
 
-    const slots = await classifyAndExtract(validatedBody.userMessage, validatedBody.conversationHistory);
+    const slots = await classifyAndExtract(sanitizedUserMessage, sanitizedHistory);
     res.json(slots);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
        res.status(400).json({ error: 'Validation Error', details: (error as any).errors });
        return;

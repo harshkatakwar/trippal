@@ -1,10 +1,7 @@
 import { getModel } from './geminiClient.js';
 import { TravelSlotsSchema, TravelSlots } from '../types/travel.js';
-
-function sanitizeInput(input: string): string {
-  // Strip HTML and truncate to 500 characters
-  return input.replace(/<[^>]*>?/gm, '').substring(0, 500);
-}
+import { sanitizeInput, extractJsonFromMarkdown } from '../utils/pureLogic.js';
+import { PROMPT_INJECTION_GUARD } from '../utils/constants.js';
 
 const getSystemInstruction = () => `
 You are a slot extractor for a travel planning app. 
@@ -29,6 +26,7 @@ Return ONLY a valid JSON object matching this structure:
   "missingSlots": string[],
   "reasoning": string
 }
+${PROMPT_INJECTION_GUARD}
 `;
 
 export async function classifyAndExtract(userMessage: string, conversationHistory: string[]): Promise<TravelSlots> {
@@ -41,14 +39,18 @@ export async function classifyAndExtract(userMessage: string, conversationHistor
   const model = getModel(getSystemInstruction());
   
   const result = await model.generateContent(prompt);
-  const text = result.response.text();
-  
-  // Strip markdown fences
-  const cleanedText = text.replace(/^```json/m, '').replace(/^```/m, '').trim();
+  const responseText = result.response.text();
+  const cleanedJsonText = extractJsonFromMarkdown(responseText);
   
   try {
-    const parsed = JSON.parse(cleanedText);
-    return TravelSlotsSchema.parse(parsed);
+    const parsedSlots = JSON.parse(cleanedJsonText);
+    
+    // Explicit key check before schema parse to ensure no silent swallowing of missing roots
+    if (!parsedSlots || typeof parsedSlots !== 'object' || !('intent' in parsedSlots)) {
+        throw new Error("Missing required 'intent' key in parsed JSON");
+    }
+
+    return TravelSlotsSchema.parse(parsedSlots);
   } catch (error) {
     throw new Error("ValidationError: Failed to parse or validate slots. " + String(error));
   }

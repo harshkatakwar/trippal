@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
+import { MODEL_NAME } from '../utils/constants.js';
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ const genAI = new GoogleGenerativeAI(apiKey);
 
 export const getModel = (systemInstruction: string) => {
   return genAI.getGenerativeModel({
-    model: 'gemini-3.5-flash',
+    model: MODEL_NAME,
     systemInstruction,
   });
 };

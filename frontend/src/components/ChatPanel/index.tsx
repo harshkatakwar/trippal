@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Plane, Palmtree, MapPin, Sparkles, Compass } from 'lucide-react';
 import type { ChatMessage } from '../../types/travel';
 
@@ -39,7 +39,7 @@ function ThinkingIndicator() {
   const phrase = TRAVEL_PHRASES[phraseIndex];
 
   const renderIcon = () => {
-    const iconProps = { size: 18, className: "text-indigo-400 animate-pulse" };
+    const iconProps = { size: 18, className: "text-indigo-400 animate-pulse", 'aria-hidden': true };
     switch (phrase.icon) {
       case "plane": return <Plane {...iconProps} />;
       case "palmtree": return <Palmtree {...iconProps} />;
@@ -61,7 +61,7 @@ function ThinkingIndicator() {
       >
         <div className="flex items-center gap-3 mb-2">
           {renderIcon()}
-          <div className="flex gap-1">
+          <div className="flex gap-1" aria-hidden="true">
             <span className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0ms', animationDuration: '0.8s' }} />
             <span className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: '150ms', animationDuration: '0.8s' }} />
             <span className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '300ms', animationDuration: '0.8s' }} />
@@ -86,49 +86,58 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading]);
+  }, [messages, isLoading, scrollToBottom]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
     onSendMessage(input.trim());
     setInput('');
-  };
+  }, [input, isLoading, onSendMessage]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
       handleSubmit(e as any);
     }
-  };
+  }, [handleSubmit]);
 
   return (
-    <div className="flex flex-col h-full rounded-2xl border shadow-lg overflow-hidden" style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f5f3ff 100%)' }}>
+    <section 
+      aria-label="Chat interface"
+      className="flex flex-col h-full rounded-2xl border shadow-lg overflow-hidden" 
+      style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f5f3ff 100%)' }}
+    >
+      {/* Live Region for Screen Readers */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {isLoading ? "Loading response, please wait…" : ""}
+      </div>
+
       {/* Header */}
-      <div
+      <header
         className="px-5 py-4 flex items-center gap-3"
         style={{
           background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
         }}
       >
-        <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.2)' }}>
+        <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.2)' }} aria-hidden="true">
           <Plane size={18} className="text-white" />
         </div>
         <div>
           <h2 className="text-base font-bold text-white tracking-tight">TripPal</h2>
-          <p className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.75)' }}>Your AI Travel Buddy</p>
+          <p className="text-xs font-medium text-white/75">Your AI Travel Buddy</p>
         </div>
         {isLoading && (
-          <span className="ml-auto text-xs font-medium px-2 py-1 rounded-full" style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>
+          <span className="ml-auto text-xs font-medium px-2 py-1 rounded-full bg-white/20 text-white" aria-hidden="true">
             Thinking...
           </span>
         )}
-      </div>
+      </header>
       
       {/* Messages */}
       <div 
@@ -143,29 +152,17 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
             style={{ animation: 'fadeSlideIn 0.3s ease-out' }}
           >
             {msg.sender !== 'user' && (
-              <div className="w-7 h-7 rounded-full flex items-center justify-center mr-2 mt-1 flex-shrink-0" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
+              <div className="w-7 h-7 rounded-full flex items-center justify-center mr-2 mt-1 flex-shrink-0 bg-gradient-to-br from-indigo-600 to-purple-600" aria-hidden="true">
                 <Sparkles size={14} className="text-white" />
               </div>
             )}
             <div 
               className={`max-w-[78%] rounded-2xl px-4 py-2.5 shadow-sm ${
-                msg.sender === 'user' 
-                  ? '' 
-                  : 'border'
+                msg.sender === 'user' ? 'bg-gradient-to-br from-indigo-600 to-indigo-500 text-white rounded-br-sm' : 'bg-white text-indigo-950 border border-indigo-100 rounded-bl-sm'
               }`}
-              style={msg.sender === 'user' ? {
-                background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)',
-                color: 'white',
-                borderRadius: '20px 20px 4px 20px',
-              } : {
-                background: 'white',
-                color: '#1e1b4b',
-                borderColor: '#e0e7ff',
-                borderRadius: '20px 20px 20px 4px',
-              }}
             >
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.text}</p>
-              <span className="text-[10px] mt-1 block" style={{ opacity: 0.5 }}>
+              <span className="text-[10px] mt-1 block opacity-50">
                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
@@ -177,20 +174,8 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
                 <button
                   key={idx}
                   onClick={() => onSendMessage(suggestion)}
-                  className="text-xs font-medium px-3 py-1.5 rounded-full border transition-colors"
-                  style={{
-                    background: 'rgba(255,255,255,0.7)',
-                    borderColor: '#c7d2fe',
-                    color: '#4f46e5'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = '#eef2ff';
-                    e.currentTarget.style.borderColor = '#818cf8';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.7)';
-                    e.currentTarget.style.borderColor = '#c7d2fe';
-                  }}
+                  aria-label={`Send suggested reply: ${suggestion}`}
+                  className="text-xs font-medium px-3 py-1.5 rounded-full border border-indigo-200 bg-white/70 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors"
                 >
                   {suggestion}
                 </button>
@@ -204,40 +189,32 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
       </div>
 
       {/* Input */}
-      <div className="px-4 py-3" style={{ borderTop: '1px solid #e0e7ff' }}>
+      <footer className="px-4 py-3 border-t border-indigo-100">
         <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+          <label htmlFor="chat-input" className="sr-only">Type your message</label>
           <input
+            id="chat-input"
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={isLoading ? "TripPal is thinking..." : "Where do you want to go? ✈️"}
-            className="flex-1 rounded-xl px-4 py-2.5 text-sm border focus:outline-none transition-all"
-            style={{
-              background: 'white',
-              borderColor: isLoading ? '#c7d2fe' : '#e0e7ff',
-              color: '#1e1b4b',
-            }}
+            className="flex-1 rounded-xl px-4 py-2.5 text-sm border border-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-indigo-950 bg-white disabled:bg-indigo-50"
             disabled={isLoading}
-            aria-label="Type your message"
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="p-2.5 rounded-xl transition-all duration-200 disabled:opacity-40"
-            style={{
-              background: !input.trim() || isLoading ? '#c7d2fe' : 'linear-gradient(135deg, #4f46e5, #7c3aed)',
-              color: 'white',
-            }}
+            className="p-2.5 rounded-xl transition-all duration-200 bg-gradient-to-br from-indigo-600 to-purple-600 text-white disabled:opacity-40 hover:opacity-90 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             aria-label="Send message"
           >
-            <Send size={18} />
+            <Send size={18} aria-hidden="true" />
           </button>
         </form>
-        <p className="text-[10px] text-center mt-2" style={{ color: '#a5b4fc' }}>
+        <p className="text-[10px] text-center mt-2 text-indigo-300">
           Powered by Gemini AI • Press ⌘+Enter to send
         </p>
-      </div>
+      </footer>
 
       <style>{`
         @keyframes fadeSlideIn {
@@ -245,6 +222,6 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-    </div>
+    </section>
   );
 }

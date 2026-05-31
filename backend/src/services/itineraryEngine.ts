@@ -2,6 +2,18 @@ import { getModel } from './geminiClient.js';
 import { TravelSlots } from '../types/travel.js';
 import { searchPlaces, getDirections, getForecast } from './mapsService.js';
 import { FunctionDeclaration, SchemaType } from '@google/generative-ai';
+import { extractJsonFromMarkdown } from '../utils/pureLogic.js';
+import { PROMPT_INJECTION_GUARD, MAX_FUNCTION_CALLS } from '../utils/constants.js';
+
+export interface Constraints {
+  budgetTotal: number;
+  departure: string;
+  return: string;
+}
+
+export interface Preferences {
+  [key: string]: boolean | string;
+}
 
 const searchPlacesTool: FunctionDeclaration = {
   name: 'search_places',
@@ -101,7 +113,75 @@ const DAYPLAN_SCHEMA = `
   }
 ]`;
 
-export async function generateItinerary(slots: TravelSlots, constraints: any, preferences: any) {
+/**
+ * Handles LLM function calls iteratively up to the max limit
+ */
+async function processFunctionCalls(chat: any, initialResponse: any) {
+  let response = initialResponse;
+  let callCount = 0;
+
+  while (response.response.functionCalls() && callCount < MAX_FUNCTION_CALLS) {
+    callCount++;
+    const calls = response.response.functionCalls();
+    if (!calls) break;
+
+    const functionResponses = [];
+    for (const call of calls) {
+      let apiResponse;
+      try {
+        const args = call.args as Record<string, string>;
+        if (call.name === 'search_places') {
+          apiResponse = await searchPlaces(args.query, args.location, args.type);
+        } else if (call.name === 'get_directions') {
+          apiResponse = await getDirections(args.origin, args.destination, args.mode);
+        } else if (call.name === 'get_weather_forecast') {
+          apiResponse = await getForecast(args.location, args.date);
+        } else {
+          throw new Error("Unknown function " + call.name);
+        }
+        
+        functionResponses.push({
+          functionResponse: {
+            name: call.name,
+            response: { result: apiResponse }
+          }
+        });
+      } catch (error: unknown) {
+        functionResponses.push({
+          functionResponse: {
+            name: call.name,
+            response: { error: error instanceof Error ? error.message : String(error) }
+          }
+        });
+      }
+    }
+
+    response = await chat.sendMessage(functionResponses);
+  }
+
+  return response;
+}
+
+/**
+ * Normalizes the parsed itinerary to ensure strict schema conformance
+ */
+function normalizeItinerary(parsedJson: any) {
+  const itineraryArray = Array.isArray(parsedJson) ? parsedJson : (parsedJson.itinerary || parsedJson.days || [parsedJson]);
+  
+  return itineraryArray.map((dayPlan: Record<string, any>, index: number) => ({
+    day: dayPlan.day || index + 1,
+    date: dayPlan.date || new Date(Date.now() + index * 86400000).toISOString().split('T')[0],
+    theme: dayPlan.theme || "Exploration",
+    morning: Array.isArray(dayPlan.morning) ? dayPlan.morning : [],
+    afternoon: Array.isArray(dayPlan.afternoon) ? dayPlan.afternoon : [],
+    evening: Array.isArray(dayPlan.evening) ? dayPlan.evening : [],
+    accommodation: dayPlan.accommodation || "To be decided",
+    estimatedCostInr: dayPlan.estimatedCostInr || dayPlan.estimated_cost_inr || 0,
+    transitNotes: dayPlan.transitNotes || dayPlan.transit_notes || ""
+  }));
+}
+
+export async function generateItinerary(slots: TravelSlots, constraints: Constraints, preferences: Preferences) {
   const systemInstruction = [
     "You are TripPal, an expert Indian travel planner with deep local knowledge.",
     "TODAY: " + new Date().toISOString(),
@@ -116,6 +196,7 @@ export async function generateItinerary(slots: TravelSlots, constraints: any, pr
     "- Every activity MUST have ALL these fields: name, description, durationMinutes (number), location (string), placeId (string), costInr (number), category (string), accessibilityNotes (string), rating (number 0-5).",
     "- estimatedCostInr for each day should be the sum of all activity costs plus accommodation.",
     "- Return ONLY a valid JSON array of DayPlan objects. No markdown, no prose, no explanation.",
+    PROMPT_INJECTION_GUARD,
     "",
     "EXACT OUTPUT SCHEMA (follow this structure precisely):",
     DAYPLAN_SCHEMA
@@ -124,71 +205,25 @@ export async function generateItinerary(slots: TravelSlots, constraints: any, pr
   const model = getModel(systemInstruction);
   const chat = model.startChat({ tools });
 
-  const prompt = "Generate a detailed day-by-day itinerary. Return ONLY a JSON array.\n\nTrip details:\n- Destination: " + (slots.destination || "Unknown") + "\n- Origin: " + (slots.origin || "Unknown") + "\n- Dates: " + (slots.travelDate || "today") + " to " + (slots.returnDate || "3 days from now") + "\n- Travelers: " + (slots.numTravelers || 2) + "\n- Budget: ₹" + (slots.budgetInr || 50000) + "\n- Preferences: " + (slots.preferences?.join(", ") || "general sightseeing");
+  const prefString = preferences && Object.keys(preferences).length > 0 
+    ? JSON.stringify(preferences) 
+    : (slots.preferences?.join(", ") || "general sightseeing");
 
-  let response = await chat.sendMessage(prompt);
-  let callCount = 0;
+  const prompt = "Generate a detailed day-by-day itinerary. Return ONLY a JSON array.\n\nTrip details:\n- Destination: " + (slots.destination || "Unknown") + "\n- Origin: " + (slots.origin || "Unknown") + "\n- Dates: " + (slots.travelDate || "today") + " to " + (slots.returnDate || "3 days from now") + "\n- Travelers: " + (slots.numTravelers || 2) + "\n- Budget: ₹" + (slots.budgetInr || 50000) + "\n- Preferences: " + prefString;
 
-  // Function calling loop
-  while (response.response.functionCalls() && callCount < 10) {
-    callCount++;
-    const calls = response.response.functionCalls();
-    if (!calls) break;
+  const initialResponse = await chat.sendMessage(prompt);
+  const finalResponse = await processFunctionCalls(chat, initialResponse);
 
-    const functionResponses = [];
-    for (const call of calls) {
-      let apiResponse;
-      try {
-        const args = call.args as Record<string, any>;
-        if (call.name === 'search_places') {
-          apiResponse = await searchPlaces(args.query as string, args.location as string, args.type as string);
-        } else if (call.name === 'get_directions') {
-          apiResponse = await getDirections(args.origin as string, args.destination as string, args.mode as string);
-        } else if (call.name === 'get_weather_forecast') {
-          apiResponse = await getForecast(args.location as string, args.date as string);
-        } else {
-          throw new Error("Unknown function " + call.name);
-        }
-        
-        functionResponses.push({
-          functionResponse: {
-            name: call.name,
-            response: { result: apiResponse }
-          }
-        });
-      } catch (error: any) {
-        functionResponses.push({
-          functionResponse: {
-            name: call.name,
-            response: { error: error.message }
-          }
-        });
-      }
+  const text = finalResponse.response.text();
+  const cleanedText = extractJsonFromMarkdown(text);
+  
+  try {
+    const parsedJson = JSON.parse(cleanedText);
+    if (!parsedJson) {
+       throw new Error("Parsed JSON is null");
     }
-
-    // Send function responses back to the model
-    response = await chat.sendMessage(functionResponses);
+    return normalizeItinerary(parsedJson);
+  } catch (error) {
+    throw new Error("Failed to parse LLM itinerary response: " + String(error));
   }
-
-  const text = response.response.text();
-  // Strip markdown code fences if present
-  const cleanedText = text.replace(/^```json\s*/m, '').replace(/```\s*$/m, '').trim();
-  
-  const parsed = JSON.parse(cleanedText);
-  
-  // Ensure we always return an array
-  const itinerary = Array.isArray(parsed) ? parsed : (parsed.itinerary || parsed.days || [parsed]);
-  
-  // Ensure each day has the required arrays
-  return itinerary.map((day: any, index: number) => ({
-    day: day.day || index + 1,
-    date: day.date || new Date(Date.now() + index * 86400000).toISOString().split('T')[0],
-    theme: day.theme || "Exploration",
-    morning: Array.isArray(day.morning) ? day.morning : [],
-    afternoon: Array.isArray(day.afternoon) ? day.afternoon : [],
-    evening: Array.isArray(day.evening) ? day.evening : [],
-    accommodation: day.accommodation || "To be decided",
-    estimatedCostInr: day.estimatedCostInr || day.estimated_cost_inr || 0,
-    transitNotes: day.transitNotes || day.transit_notes || ""
-  }));
 }
