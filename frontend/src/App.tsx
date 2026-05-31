@@ -3,7 +3,7 @@ import { ChatPanel } from './components/ChatPanel';
 import type { ChatMessage, TravelSlots } from './types/travel';
 import { classifyIntent, generateItinerary } from './services/api';
 import { Plane, Globe } from 'lucide-react';
-import { INITIAL_GREETING, INITIAL_SUGGESTIONS, MAX_HISTORY_TURNS } from './utils/constants';
+import { INITIAL_GREETING, INITIAL_SUGGESTIONS, MAX_HISTORY_TURNS, DEFAULT_BUDGET } from './utils/constants';
 import { sanitizeInput } from './utils/pureLogic';
 
 /**
@@ -44,7 +44,6 @@ function App() {
       travelDate: "Travel date 📅",
       returnDate: "Return date (or number of days) 🗓️",
       numTravelers: "Number of travelers 👥",
-      budgetInr: "Total budget 💰"
     };
 
     const missingList = slots.missingSlots.map(s => `• ${slotNames[s] || s}`).join('\n');
@@ -63,15 +62,19 @@ function App() {
    * @param {TravelSlots} slots - The fully populated travel slots for the trip.
    * @param {AbortSignal} signal - Signal to abort the network request if needed.
    */
-  const processItinerary = async (slots: TravelSlots, signal: AbortSignal) => {
+  const processItinerary = async (slots: TravelSlots, signal: AbortSignal, budgetDefaulted: boolean) => {
     const isModify = slots.intent === 'modify_trip';
+
+    const budgetNote = budgetDefaulted
+      ? `\n\n_(No budget mentioned — I'll plan a comfortable ₹${DEFAULT_BUDGET.toLocaleString('en-IN')} trip. Tell me a budget if you'd like to adjust it!)_`
+      : '';
 
     const statusMsg: ChatMessage = {
       id: (Date.now() + 1).toString(),
       sender: 'trippal',
       text: isModify
         ? 'Got it! 🛠️ Recrafting your itinerary with those updates...\n\nThis usually takes few seconds.'
-        : '🎉 I have everything I need! Crafting your perfect itinerary now...\n\nThis usually takes few seconds.',
+        : `🎉 I have everything I need! Crafting your perfect itinerary now...\n\nThis usually takes few seconds.${budgetNote}`,
       timestamp: new Date().toISOString()
     };
     setMessages(prev => [...prev, statusMsg]);
@@ -190,7 +193,9 @@ function App() {
           if (!mergedSlots.origin) missing.push('origin');
           if (!mergedSlots.travelDate) missing.push('travelDate');
           if (!mergedSlots.numTravelers) missing.push('numTravelers');
-          if (!mergedSlots.budgetInr) missing.push('budgetInr');
+          // Budget is optional — fall back to DEFAULT_BUDGET if not provided
+          const budgetDefaulted = !mergedSlots.budgetInr;
+          if (budgetDefaulted) mergedSlots.budgetInr = DEFAULT_BUDGET;
           mergedSlots.missingSlots = missing;
         }
 
@@ -201,7 +206,8 @@ function App() {
           if (finalSlots.missingSlots && finalSlots.missingSlots.length > 0) {
             processMissingSlots(finalSlots);
           } else {
-            await processItinerary(finalSlots, signal);
+            const budgetDefaulted = finalSlots.budgetInr === DEFAULT_BUDGET && !slots.budgetInr;
+            await processItinerary(finalSlots, signal, budgetDefaulted);
           }
         } else {
           processOtherIntent(finalSlots.intent || slots.intent);
