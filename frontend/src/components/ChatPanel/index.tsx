@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Plane, Palmtree, MapPin, Sparkles, Compass } from 'lucide-react';
 import type { ChatMessage } from '../../types/travel';
+import { ItineraryBuilder } from '../ItineraryBuilder';
 
 interface ChatPanelProps {
   messages: ChatMessage[];
@@ -158,11 +159,24 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
             )}
             <div 
               role={msg.text.includes('⚠️') ? 'alert' : undefined}
-              className={`max-w-[78%] rounded-2xl px-4 py-2.5 shadow-sm ${
-                msg.sender === 'user' ? 'bg-gradient-to-br from-indigo-600 to-indigo-500 text-white rounded-br-sm' : 'bg-white text-indigo-950 border border-indigo-100 rounded-bl-sm'
+              className={`rounded-2xl px-4 py-2.5 shadow-sm ${
+                msg.sender === 'user' 
+                  ? 'bg-gradient-to-br from-indigo-600 to-indigo-500 text-white rounded-br-sm max-w-[78%]' 
+                  : msg.itinerary 
+                    ? 'bg-white text-indigo-950 border border-indigo-100 rounded-bl-sm w-full max-w-[95%] sm:max-w-[85%]' 
+                    : 'bg-white text-indigo-950 border border-indigo-100 rounded-bl-sm max-w-[78%]'
               }`}
             >
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+              
+              {msg.itinerary && (
+                <div className="mt-4 pt-4 border-t border-indigo-100">
+                  <div className="bg-slate-900 rounded-2xl p-4 overflow-hidden shadow-inner">
+                    <ItineraryBuilder itinerary={msg.itinerary} />
+                  </div>
+                </div>
+              )}
+
               <span className="text-[10px] mt-1 block opacity-50">
                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>

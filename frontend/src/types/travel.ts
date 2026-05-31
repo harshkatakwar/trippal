@@ -42,4 +42,5 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
   suggestions?: string[];
+  itinerary?: DayPlan[];
 }

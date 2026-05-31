@@ -1,7 +1,6 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { ChatPanel } from './components/ChatPanel';
-import { ItineraryBuilder } from './components/ItineraryBuilder';
-import type { ChatMessage, DayPlan, TravelSlots } from './types/travel';
+import type { ChatMessage, TravelSlots } from './types/travel';
 import { classifyIntent, generateItinerary } from './services/api';
 import { Plane, Globe } from 'lucide-react';
 import { INITIAL_GREETING, INITIAL_SUGGESTIONS, MAX_HISTORY_TURNS } from './utils/constants';
@@ -16,7 +15,6 @@ function App() {
     suggestions: INITIAL_SUGGESTIONS
   }]);
   
-  const [itinerary, setItinerary] = useState<DayPlan[]>([]);
   const [currentSlots, setCurrentSlots] = useState<Partial<TravelSlots>>({});
   const [isLoading, setIsLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -60,13 +58,13 @@ function App() {
     setMessages(prev => [...prev, statusMsg]);
     
     const newItinerary = await generateItinerary(slots, signal);
-    setItinerary(newItinerary);
     
     const doneMsg: ChatMessage = {
       id: (Date.now() + 2).toString(),
       sender: 'trippal',
-      text: '✅ Your itinerary is ready!\n\nCheck out the detailed day-by-day plan on the right panel. You can scroll through each day to see activities, costs, and recommendations.\n\nHappy travels! 🌍✈️',
+      text: '✅ Your itinerary is ready!\n\nHappy travels! 🌍✈️',
       timestamp: new Date().toISOString(),
+      itinerary: newItinerary,
       suggestions: [
         "Make it cheaper",
         "Add more relaxing activities",
@@ -206,30 +204,14 @@ function App() {
       </header>
       
       {/* Main Content */}
-      <main className={`flex-1 flex overflow-hidden p-4 gap-4 w-full mx-auto flex-wrap lg:flex-nowrap min-w-[320px] ${itinerary.length > 0 ? 'max-w-[1600px]' : 'max-w-[800px] justify-center'}`}>
-        <div className={`flex-shrink-0 flex flex-col h-[600px] lg:h-auto transition-all duration-300 ${itinerary.length > 0 ? 'w-full lg:w-[420px]' : 'w-full'}`}>
+      <main className="flex-1 flex overflow-hidden p-4 gap-4 w-full max-w-4xl mx-auto flex-col">
+        <div className="flex-1 flex flex-col h-full w-full transition-all duration-300">
           <ChatPanel 
             messages={messages} 
             onSendMessage={handleSendMessage} 
             isLoading={isLoading} 
           />
         </div>
-        
-        {itinerary.length > 0 && (
-          <div className="flex-1 flex flex-col min-w-0 h-[600px] lg:h-auto mt-4 lg:mt-0 transition-all duration-300">
-            <div className="rounded-2xl shadow-lg h-full flex flex-col p-6 overflow-hidden border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}>
-              <h2 className="text-xl font-bold mb-5 flex-shrink-0 flex items-center gap-2 text-white">
-                <span className="bg-clip-text text-transparent bg-gradient-to-br from-purple-400 to-indigo-400">Your Itinerary</span>
-                {useMemo(() => (itinerary.length > 0 && (
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">
-                    {itinerary.length} days
-                  </span>
-                )), [itinerary.length])}
-              </h2>
-              <ItineraryBuilder itinerary={itinerary} />
-            </div>
-          </div>
-        )}
       </main>
       <footer className="sr-only">TripPal Application Footer</footer>
     </div>
