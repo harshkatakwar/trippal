@@ -137,8 +137,8 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
         aria-live="polite"
       >
         {messages.map((msg) => (
+        <React.Fragment key={msg.id}>
           <div 
-            key={msg.id} 
             className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             style={{ animation: 'fadeSlideIn 0.3s ease-out' }}
           >
@@ -170,6 +170,34 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
               </span>
             </div>
           </div>
+          
+          {msg.suggestions && msg.suggestions.length > 0 && msg.sender !== 'user' && !isLoading && (
+            <div className="flex flex-wrap gap-2 ml-11 mt-1" style={{ animation: 'fadeSlideIn 0.4s ease-out' }}>
+              {msg.suggestions.map((suggestion, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => onSendMessage(suggestion)}
+                  className="text-xs font-medium px-3 py-1.5 rounded-full border transition-colors"
+                  style={{
+                    background: 'rgba(255,255,255,0.7)',
+                    borderColor: '#c7d2fe',
+                    color: '#4f46e5'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = '#eef2ff';
+                    e.currentTarget.style.borderColor = '#818cf8';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.7)';
+                    e.currentTarget.style.borderColor = '#c7d2fe';
+                  }}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
+        </React.Fragment>
         ))}
         {isLoading && <ThinkingIndicator />}
         <div ref={messagesEndRef} />

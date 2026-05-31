@@ -41,4 +41,5 @@ export interface ChatMessage {
   sender: 'user' | 'trippal';
   text: string;
   timestamp: string;
+  suggestions?: string[];
 }

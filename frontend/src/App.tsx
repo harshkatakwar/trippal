@@ -10,7 +10,8 @@ function App() {
     id: '1',
     sender: 'trippal',
     text: "Hey there! 👋 I'm TripPal, your AI travel buddy.\n\nTell me where you'd like to go, and I'll craft the perfect itinerary for you. Just say something like:\n\n🏖️ \"Plan a 5-day trip to Goa\"\n🏔️ \"I want to visit Manali next week\"\n🕌 \"Weekend getaway to Jaipur under 20k\"",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    suggestions: ["Plan a 3-day trip to Goa", "Weekend getaway to Jaipur", "Honeymoon in Kerala"]
   }]);
   
   const [itinerary, setItinerary] = useState<DayPlan[]>([]);
@@ -37,7 +38,13 @@ function App() {
             id: (Date.now() + 1).toString(),
             sender: 'trippal',
             text: replyText,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            suggestions: [
+              `I'm starting from Delhi`,
+              `Next weekend`,
+              `For 2 people`,
+              `My budget is 50k`
+            ]
           };
           setMessages(prev => [...prev, replyMsg]);
         } else {
@@ -56,7 +63,13 @@ function App() {
             id: (Date.now() + 2).toString(),
             sender: 'trippal',
             text: '✅ Your itinerary is ready!\n\nCheck out the detailed day-by-day plan on the right panel. You can scroll through each day to see activities, costs, and recommendations.\n\nHappy travels! 🌍✈️',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            suggestions: [
+              "Make it cheaper",
+              "Add more relaxing activities",
+              "Change to 3 days instead",
+              "Add some local food places"
+            ]
           };
           setMessages(prev => [...prev, doneMsg]);
         }
