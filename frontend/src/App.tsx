@@ -219,14 +219,16 @@ function App() {
         }
       } catch (error: unknown) {
         if (error instanceof Error && error.name === 'AbortError') {
-          return; // Don't show error state on intentional abort
+          return;
         }
 
-        // TEST T4 — network/API error: user-friendly message shown, no crash
+        const isWarmingUp = error instanceof Error && error.name === 'WarmingUpError';
         const errorMsg: ChatMessage = {
           id: (Date.now() + 1).toString(),
           sender: 'trippal',
-          text: `⚠️ Oops! Something went wrong on my end.\n\nError details: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease make sure the backend server is running and try again in a moment.`,
+          text: isWarmingUp
+            ? `⏳ ${error.message}\n\nJust send your message again in a moment — it'll be instant after that!`
+            : `⚠️ Oops! Something went wrong on my end.\n\nError details: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease try again in a moment.`,
           timestamp: new Date().toISOString()
         };
         setMessages(prev => [...prev, errorMsg]);
@@ -239,27 +241,48 @@ function App() {
   }, [messages, currentSlots]);
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, #0f0a2e 0%, #1a1145 30%, #0d1b3e 70%, #0a0f24 100%)' }}>
-      {/* Header */}
-      <header className="px-6 py-4 flex items-center justify-between border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0b0720 0%, #130d35 35%, #0a1628 70%, #060b1a 100%)' }}>
+
+      {/* Ambient floating orbs */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <div className="orb-1 absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-20"
+          style={{ background: 'radial-gradient(circle, #6366f1 0%, #4f46e5 40%, transparent 70%)' }} />
+        <div className="orb-2 absolute top-1/3 -right-40 w-80 h-80 rounded-full opacity-15"
+          style={{ background: 'radial-gradient(circle, #8b5cf6 0%, #7c3aed 40%, transparent 70%)' }} />
+        <div className="orb-3 absolute -bottom-24 left-1/3 w-72 h-72 rounded-full opacity-10"
+          style={{ background: 'radial-gradient(circle, #06b6d4 0%, #0284c7 40%, transparent 70%)' }} />
+      </div>
+
+      {/* Header — glassmorphism */}
+      <header
+        className="relative z-10 px-6 py-4 flex items-center justify-between border-b"
+        style={{
+          background: 'rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderColor: 'rgba(255,255,255,0.08)',
+        }}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-600">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
+            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 0 20px rgba(99,102,241,0.4)' }}>
             <Plane size={20} className="text-white" aria-hidden="true" />
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white">TripPal</h1>
-            <p className="text-xs font-medium text-indigo-200 opacity-80">Intelligent Travel Experience Engine</p>
+            <p className="text-xs font-medium opacity-60" style={{ color: '#a5b4fc' }}>Intelligent Travel Experience Engine</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border" style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)' }}>
-          <Globe size={14} className="text-indigo-300" aria-hidden="true" />
-          <span className="text-xs font-medium text-indigo-300">Powered by Gemini 3.5 Flash</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border"
+          style={{ background: 'rgba(99,102,241,0.1)', borderColor: 'rgba(99,102,241,0.25)' }}>
+          <Globe size={14} className="text-indigo-400" aria-hidden="true" />
+          <span className="text-xs font-medium text-indigo-400">Powered by Gemini</span>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex overflow-hidden p-4 gap-4 w-full max-w-4xl mx-auto flex-col">
-        <div className="flex-1 flex flex-col h-full w-full transition-all duration-300">
+      <main className="relative z-10 flex-1 flex overflow-hidden p-4 gap-4 w-full max-w-4xl mx-auto flex-col">
+        <div className="flex-1 flex flex-col h-full w-full">
           <ChatPanel
             messages={messages}
             onSendMessage={handleSendMessage}
