@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { MapPin, Clock, IndianRupee, Sunrise, Sun, Moon, Building, Copy, Check } from 'lucide-react';
+import { MapPin, Clock, IndianRupee, Sunrise, Sun, Moon, Building, Copy, Check, FileDown } from 'lucide-react';
 import type { DayPlan, Activity, WeatherInfo } from '../../types/travel';
 
 interface ItineraryBuilderProps {
@@ -181,6 +181,117 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
     });
   }, [itinerary]);
 
+  const handlePdf = useCallback(() => {
+    const total = itinerary.reduce((s, d) => s + d.estimatedCostInr, 0);
+
+    const activitiesHtml = (acts: Activity[]) =>
+      acts.map(a => `
+        <div class="activity">
+          <div>
+            <div class="act-name">${a.name}</div>
+            <div class="act-desc">${a.description}</div>
+            <div class="act-meta">
+              ${a.durationMinutes ? `${a.durationMinutes}m` : ''}
+              ${a.location ? ` · ${a.location}` : ''}
+              ${a.rating > 0 ? ` · ⭐ ${a.rating}` : ''}
+            </div>
+          </div>
+          <div class="act-cost">₹${a.costInr.toLocaleString('en-IN')}</div>
+        </div>`).join('');
+
+    const slotsHtml = (day: DayPlan) => [
+      { title: 'Morning', acts: day.morning },
+      { title: 'Afternoon', acts: day.afternoon },
+      { title: 'Evening', acts: day.evening },
+    ]
+      .filter(s => s.acts.length > 0)
+      .map(s => `<div class="slot"><div class="slot-title">${s.title}</div>${activitiesHtml(s.acts)}</div>`)
+      .join('');
+
+    const daysHtml = itinerary.map(day => `
+      <div class="day">
+        <div class="day-header">
+          <div>
+            <span class="day-pill">Day ${day.day}</span>
+            <span class="day-theme">${day.theme}</span>
+          </div>
+          <div class="day-right">
+            ${day.weather ? `<span class="weather">${weatherEmoji(day.weather.condition)} ${day.weather.temperatureCelsius}°C</span>` : ''}
+            <span class="day-cost">₹${day.estimatedCostInr.toLocaleString('en-IN')}</span>
+          </div>
+        </div>
+        <div class="day-body">
+          ${slotsHtml(day)}
+          ${day.accommodation && day.accommodation !== 'In your comfort zone' ? `
+            <div class="stay">
+              <span>🏨 ${day.accommodation}</span>
+              ${(day.accommodationCostInr ?? 0) > 0 ? `<span>₹${(day.accommodationCostInr ?? 0).toLocaleString('en-IN')}/night</span>` : ''}
+            </div>` : ''}
+          ${day.transitNotes ? `<div class="transit">${day.transitNotes}</div>` : ''}
+        </div>
+      </div>`).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>TripPal Itinerary</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',Arial,sans-serif;color:#1e1b4b;padding:36px;font-size:13px}
+    .header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #6366f1;padding-bottom:14px;margin-bottom:20px}
+    .header h1{font-size:22px;color:#4f46e5;font-weight:800}
+    .header p{font-size:12px;color:#6b7280;margin-top:3px}
+    .total-box{background:#f5f3ff;border:1px solid #c7d2fe;border-radius:8px;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+    .total-box .label{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
+    .total-box .amount{font-size:22px;font-weight:800;color:#4f46e5}
+    .day{margin-bottom:24px;page-break-inside:avoid;border:1px solid #e0e7ff;border-radius:10px;overflow:hidden}
+    .day-header{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center}
+    .day-pill{font-size:11px;font-weight:700;background:rgba(255,255,255,.25);padding:2px 8px;border-radius:20px;margin-right:8px}
+    .day-theme{font-size:13px;font-weight:600}
+    .day-right{display:flex;align-items:center;gap:10px}
+    .weather{font-size:12px;opacity:.85}
+    .day-cost{font-size:13px;font-weight:700}
+    .day-body{padding:14px 16px}
+    .slot{margin-bottom:12px}
+    .slot-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6366f1;margin-bottom:6px}
+    .activity{display:flex;justify-content:space-between;align-items:flex-start;background:#f9f7ff;border-radius:6px;padding:8px 10px;margin-bottom:5px}
+    .act-name{font-size:12px;font-weight:600;color:#1e1b4b}
+    .act-desc{font-size:11px;color:#6b7280;margin-top:2px;line-height:1.4}
+    .act-meta{font-size:10px;color:#9ca3af;margin-top:3px}
+    .act-cost{font-size:12px;font-weight:700;color:#4f46e5;white-space:nowrap;margin-left:10px;flex-shrink:0}
+    .stay{display:flex;justify-content:space-between;font-size:12px;color:#6b7280;padding-top:10px;border-top:1px solid #e0e7ff;margin-top:6px}
+    .transit{font-size:11px;color:#9ca3af;font-style:italic;margin-top:6px}
+    .footer{margin-top:28px;padding-top:12px;border-top:1px solid #e0e7ff;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af}
+    @media print{body{padding:20px}.day{page-break-inside:avoid}}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>✈️ TripPal Itinerary</h1>
+      <p>${itinerary[0]?.date ?? ''} → ${itinerary.at(-1)?.date ?? ''} &nbsp;·&nbsp; ${itinerary.length} days</p>
+    </div>
+  </div>
+  <div class="total-box">
+    <span class="label">Total Estimated Cost</span>
+    <span class="amount">₹${total.toLocaleString('en-IN')}</span>
+  </div>
+  ${daysHtml}
+  <div class="footer">
+    <span>Generated by TripPal</span>
+    <span>${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+  </div>
+  <script>window.onload=()=>{window.print()}<\/script>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank');
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+  }, [itinerary]);
+
   if (!itinerary || itinerary.length === 0) {
     return (
       <div
@@ -303,14 +414,24 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
             Day {day.day}
           </button>
         ))}
-        <button
-          onClick={handleCopy}
-          aria-label="Copy itinerary for WhatsApp"
-          className="ml-auto flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-white/10 text-white/50 hover:bg-white/15 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
-        >
-          {copied ? <Check size={11} /> : <Copy size={11} />}
-          {copied ? 'Copied!' : 'Share'}
-        </button>
+        <div className="ml-auto flex items-center gap-1.5">
+          <button
+            onClick={handleCopy}
+            aria-label="Copy itinerary text for WhatsApp"
+            className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-white/10 text-white/50 hover:bg-white/15 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+          >
+            {copied ? <Check size={11} /> : <Copy size={11} />}
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+          <button
+            onClick={handlePdf}
+            aria-label="Download itinerary as PDF"
+            className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-600/60 text-indigo-200 hover:bg-indigo-600/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+          >
+            <FileDown size={11} />
+            PDF
+          </button>
+        </div>
       </div>
 
       {/* Day cards */}
