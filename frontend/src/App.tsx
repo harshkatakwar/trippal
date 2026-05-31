@@ -170,8 +170,8 @@ function App() {
       </header>
       
       {/* Main Content */}
-      <main className="flex-1 flex overflow-hidden p-4 gap-4 max-w-[1600px] w-full mx-auto flex-wrap lg:flex-nowrap min-w-[320px]">
-        <div className="w-full lg:w-[420px] flex-shrink-0 flex flex-col h-[600px] lg:h-auto">
+      <main className={`flex-1 flex overflow-hidden p-4 gap-4 w-full mx-auto flex-wrap lg:flex-nowrap min-w-[320px] ${itinerary.length > 0 ? 'max-w-[1600px]' : 'max-w-[800px] justify-center'}`}>
+        <div className={`flex-shrink-0 flex flex-col h-[600px] lg:h-auto transition-all duration-300 ${itinerary.length > 0 ? 'w-full lg:w-[420px]' : 'w-full'}`}>
           <ChatPanel 
             messages={messages} 
             onSendMessage={handleSendMessage} 
@@ -179,19 +179,21 @@ function App() {
           />
         </div>
         
-        <div className="flex-1 flex flex-col min-w-0 h-[600px] lg:h-auto mt-4 lg:mt-0">
-          <div className="rounded-2xl shadow-lg h-full flex flex-col p-6 overflow-hidden border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}>
-            <h2 className="text-xl font-bold mb-5 flex-shrink-0 flex items-center gap-2 text-white">
-              <span className="bg-clip-text text-transparent bg-gradient-to-br from-purple-400 to-indigo-400">Your Itinerary</span>
-              {useMemo(() => (itinerary.length > 0 && (
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">
-                  {itinerary.length} days
-                </span>
-              )), [itinerary.length])}
-            </h2>
-            <ItineraryBuilder itinerary={itinerary} />
+        {itinerary.length > 0 && (
+          <div className="flex-1 flex flex-col min-w-0 h-[600px] lg:h-auto mt-4 lg:mt-0 transition-all duration-300">
+            <div className="rounded-2xl shadow-lg h-full flex flex-col p-6 overflow-hidden border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}>
+              <h2 className="text-xl font-bold mb-5 flex-shrink-0 flex items-center gap-2 text-white">
+                <span className="bg-clip-text text-transparent bg-gradient-to-br from-purple-400 to-indigo-400">Your Itinerary</span>
+                {useMemo(() => (itinerary.length > 0 && (
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">
+                    {itinerary.length} days
+                  </span>
+                )), [itinerary.length])}
+              </h2>
+              <ItineraryBuilder itinerary={itinerary} />
+            </div>
           </div>
-        </div>
+        )}
       </main>
       <footer className="sr-only">TripPal Application Footer</footer>
     </div>
