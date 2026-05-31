@@ -32,6 +32,7 @@ export interface DayPlan {
   afternoon: Activity[];
   evening: Activity[];
   accommodation: string;
+  accommodationCostInr?: number;
   estimatedCostInr: number;
   transitNotes: string;
 }

@@ -116,12 +116,18 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({ itinerary
             {renderTimeSlot("Evening", dayPlan.evening, Moon, '#8b5cf6', '#6366f1')}
           </div>
           
-          {/* Accommodation */}
           {dayPlan.accommodation && (
-            <footer className="mt-4 pt-3 flex items-center gap-2 border-t border-white/10">
-              <Building size={14} className="text-indigo-300" aria-hidden="true" />
-              <span className="text-xs font-semibold text-white/60">Stay:</span>
-              <span className="text-xs text-white/40">{dayPlan.accommodation}</span>
+            <footer className="mt-4 pt-3 flex items-center justify-between border-t border-white/10">
+              <div className="flex items-center gap-2">
+                <Building size={14} className="text-indigo-300" aria-hidden="true" />
+                <span className="text-xs font-semibold text-white/60">Stay:</span>
+                <span className="text-xs text-white/40">{dayPlan.accommodation}</span>
+              </div>
+              {dayPlan.accommodationCostInr !== undefined && dayPlan.accommodationCostInr > 0 && (
+                <span className="text-xs font-bold text-indigo-300">
+                  ₹{dayPlan.accommodationCostInr.toLocaleString()}
+                </span>
+              )}
             </footer>
           )}
         </article>

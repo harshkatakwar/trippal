@@ -114,6 +114,7 @@ const DAYPLAN_SCHEMA = `
       }
     ],
     "accommodation": "Hotel Fidalgo, Panaji",
+    "accommodationCostInr": 4500,
     "estimatedCostInr": 8000,
     "transitNotes": "Taxi from airport to hotel: ~45 mins"
   }
@@ -181,15 +182,24 @@ function normalizeItinerary(parsedJson: any) {
       accommodation = "In your comfort zone";
     }
 
+    const morning = Array.isArray(dayPlan.morning) ? dayPlan.morning : [];
+    const afternoon = Array.isArray(dayPlan.afternoon) ? dayPlan.afternoon : [];
+    const evening = Array.isArray(dayPlan.evening) ? dayPlan.evening : [];
+    
+    const allActivities = [...morning, ...afternoon, ...evening];
+    const activitiesCost = allActivities.reduce((acc, curr) => acc + (curr.costInr || 0), 0);
+    const accommodationCostInr = dayPlan.accommodationCostInr || 0;
+
     return {
       day: dayPlan.day || index + 1,
       date: dayPlan.date || new Date(Date.now() + index * 86400000).toISOString().split('T')[0],
       theme: dayPlan.theme || "Exploration",
-      morning: Array.isArray(dayPlan.morning) ? dayPlan.morning : [],
-      afternoon: Array.isArray(dayPlan.afternoon) ? dayPlan.afternoon : [],
-      evening: Array.isArray(dayPlan.evening) ? dayPlan.evening : [],
+      morning,
+      afternoon,
+      evening,
       accommodation,
-      estimatedCostInr: dayPlan.estimatedCostInr || dayPlan.estimated_cost_inr || 0,
+      accommodationCostInr,
+      estimatedCostInr: activitiesCost + accommodationCostInr,
       transitNotes: dayPlan.transitNotes || dayPlan.transit_notes || ""
     };
   });
@@ -215,7 +225,8 @@ export async function generateItinerary(slots: TravelSlots, constraints: Constra
     "- Never exceed total budget.",
     "- Each day MUST have at least 1 activity in morning, afternoon, and evening arrays.",
     "- Every activity MUST have ALL these fields: name, description, durationMinutes (number), location (string), placeId (string), costInr (number), category (string), accessibilityNotes (string), rating (number 0-5).",
-    "- estimatedCostInr for each day should be the sum of all activity costs plus accommodation.",
+    "- Include accommodationCostInr (number) in the DayPlan to represent the cost of the hotel for that night.",
+    "- estimatedCostInr for each day MUST EXACTLY equal the sum of all activity costs plus accommodationCostInr.",
     "- Return ONLY a valid JSON array of DayPlan objects. No markdown, no prose, no explanation.",
     PROMPT_INJECTION_GUARD,
     "",
