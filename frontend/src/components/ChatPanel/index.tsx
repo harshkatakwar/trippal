@@ -177,7 +177,7 @@ export const ChatPanel = React.memo(function ChatPanel({ messages, onSendMessage
               {msg.itinerary && (
                 <div className="mt-4 pt-4 border-t border-indigo-100">
                   <div className="bg-slate-900 rounded-2xl p-4 overflow-hidden shadow-inner">
-                    <ItineraryBuilder itinerary={msg.itinerary} />
+                    <ItineraryBuilder itinerary={msg.itinerary} previousItinerary={msg.previousItinerary} />
                   </div>
                 </div>
               )}

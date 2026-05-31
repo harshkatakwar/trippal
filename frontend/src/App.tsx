@@ -81,6 +81,10 @@ function App() {
 
     const newItinerary = await generateItinerary(slots, signal);
 
+    const lastItineraryMsg = isModify
+      ? [...messages].reverse().find(m => m.itinerary)
+      : undefined;
+
     const doneMsg: ChatMessage = {
       id: (Date.now() + 2).toString(),
       sender: 'trippal',
@@ -89,6 +93,7 @@ function App() {
         : '✅ Your itinerary is ready!\n\nHappy travels! 🌍✈️',
       timestamp: new Date().toISOString(),
       itinerary: newItinerary,
+      previousItinerary: lastItineraryMsg?.itinerary,
       suggestions: [
         "Make it cheaper",
         "Add more relaxing activities",

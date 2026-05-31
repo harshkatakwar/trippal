@@ -116,7 +116,8 @@ const DAYPLAN_SCHEMA = `
     "accommodation": "Hotel Fidalgo, Panaji",
     "accommodationCostInr": 4500,
     "estimatedCostInr": 8000,
-    "transitNotes": "Taxi from airport to hotel: ~45 mins"
+    "transitNotes": "Taxi from airport to hotel: ~45 mins",
+    "weather": { "condition": "Sunny", "temperatureCelsius": 31, "humidity": "Low" }
   }
 ]`;
 
@@ -207,7 +208,8 @@ export function normalizeItinerary(parsedJson: unknown): DayPlan[] {
       accommodation,
       accommodationCostInr,
       estimatedCostInr: activitiesCost + accommodationCostInr,
-      transitNotes: typeof dayPlan.transitNotes === 'string' ? dayPlan.transitNotes : typeof dayPlan.transit_notes === 'string' ? dayPlan.transit_notes : ""
+      transitNotes: typeof dayPlan.transitNotes === 'string' ? dayPlan.transitNotes : typeof dayPlan.transit_notes === 'string' ? dayPlan.transit_notes : "",
+      ...(dayPlan.weather && typeof dayPlan.weather === 'object' ? { weather: dayPlan.weather as DayPlan['weather'] } : {})
     };
   });
 }
@@ -234,6 +236,7 @@ export async function generateItinerary(slots: TravelSlots, constraints: Constra
     "- Every activity MUST have ALL these fields: name, description, durationMinutes (number), location (string), placeId (string), costInr (number), category (string), accessibilityNotes (string), rating (number 0-5).",
     "- Include accommodationCostInr (number) in the DayPlan to represent the cost of the hotel for that night.",
     "- estimatedCostInr for each day MUST EXACTLY equal the sum of all activity costs plus accommodationCostInr.",
+    "- Call get_weather_forecast for each day's date and include the result in the weather field (condition, temperatureCelsius, humidity).",
     "- Return ONLY a valid JSON array of DayPlan objects. No markdown, no prose, no explanation.",
     PROMPT_INJECTION_GUARD,
     "",

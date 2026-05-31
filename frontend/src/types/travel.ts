@@ -24,6 +24,12 @@ export interface Activity {
   rating: number;
 }
 
+export interface WeatherInfo {
+  condition: string;
+  temperatureCelsius: number;
+  humidity?: string;
+}
+
 export interface DayPlan {
   day: number;
   date: string;
@@ -35,6 +41,7 @@ export interface DayPlan {
   accommodationCostInr?: number;
   estimatedCostInr: number;
   transitNotes: string;
+  weather?: WeatherInfo;
 }
 
 export interface ChatMessage {
@@ -44,4 +51,5 @@ export interface ChatMessage {
   timestamp: string;
   suggestions?: string[];
   itinerary?: DayPlan[];
+  previousItinerary?: DayPlan[];
 }

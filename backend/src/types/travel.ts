@@ -49,6 +49,12 @@ export interface Activity {
   rating: number;
 }
 
+export interface WeatherInfo {
+  condition: string;
+  temperatureCelsius: number;
+  humidity?: string;
+}
+
 export interface DayPlan {
   day: number;
   date: string;
@@ -60,4 +66,5 @@ export interface DayPlan {
   accommodationCostInr: number;
   estimatedCostInr: number;
   transitNotes: string;
+  weather?: WeatherInfo;
 }
