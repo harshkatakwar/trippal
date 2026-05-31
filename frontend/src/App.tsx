@@ -130,6 +130,19 @@ function App() {
         if (slots.numTravelers) mergedSlots.numTravelers = slots.numTravelers;
         if (slots.budgetInr) mergedSlots.budgetInr = slots.budgetInr;
 
+        // Ensure strictly required fields aren't undefined to prevent Zod Validation Error
+        mergedSlots.confidence = slots.confidence || 1;
+        mergedSlots.preferences = slots.preferences || [];
+        mergedSlots.reasoning = slots.reasoning || "Merged";
+        
+        // Ensure nullable fields are null, not undefined
+        mergedSlots.destination = mergedSlots.destination || null;
+        mergedSlots.origin = mergedSlots.origin || null;
+        mergedSlots.travelDate = mergedSlots.travelDate || null;
+        mergedSlots.returnDate = mergedSlots.returnDate || null;
+        mergedSlots.numTravelers = mergedSlots.numTravelers || null;
+        mergedSlots.budgetInr = mergedSlots.budgetInr || null;
+
         if (mergedSlots.intent === 'plan_trip') {
           const missing = [];
           if (!mergedSlots.destination) missing.push('destination');
