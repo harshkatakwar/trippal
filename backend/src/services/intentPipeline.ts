@@ -19,6 +19,11 @@ Convert relative dates to ISO 8601 using today's date.
 Convert shorthand budgets (e.g., "30k" to 30000, "1 lakh" to 100000).
 Use null for unstated values.
 
+CRITICAL DATE RULES:
+- If the user mentions "N-day trip" or "N days", compute returnDate = travelDate + N days. If no travelDate is given, use today as travelDate.
+- If the user says "weekend", set travelDate = next Saturday, returnDate = next Monday.
+- returnDate must always be AFTER travelDate. Never leave returnDate null when a trip duration is mentioned.
+
 Return ONLY a valid JSON object matching this structure:
 {
   "intent": "plan_trip" | "find_flights" | "find_hotels" | "modify_trip" | "cancel_booking" | "get_itinerary" | "out_of_scope",
