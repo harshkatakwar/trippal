@@ -40,7 +40,7 @@ function ThinkingIndicator() {
   const phrase = TRAVEL_PHRASES[phraseIndex];
 
   const renderIcon = () => {
-    const iconProps = { size: 18, className: "text-indigo-400 animate-pulse", 'aria-hidden': true };
+    const iconProps = { size: 18, className: "text-sky-400 animate-pulse", 'aria-hidden': true };
     switch (phrase.icon) {
       case "plane": return <Plane {...iconProps} />;
       case "palmtree": return <Palmtree {...iconProps} />;
@@ -58,16 +58,16 @@ function ThinkingIndicator() {
         style={{
           background: 'rgba(255,255,255,0.9)',
           backdropFilter: 'blur(12px)',
-          borderColor: 'rgba(99,102,241,0.2)',
-          boxShadow: '0 4px 24px rgba(99,102,241,0.12)',
+          borderColor: 'rgba(14,165,233,0.2)',
+          boxShadow: '0 4px 24px rgba(14,165,233,0.12)',
         }}
       >
         <div className="flex items-center gap-3 mb-2">
           {renderIcon()}
           <div className="flex gap-1.5" aria-hidden="true">
-            <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#6366f1', animationDelay: '0ms', animationDuration: '0.7s' }} />
-            <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#8b5cf6', animationDelay: '140ms', animationDuration: '0.7s' }} />
-            <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#a78bfa', animationDelay: '280ms', animationDuration: '0.7s' }} />
+            <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#0ea5e9', animationDelay: '0ms', animationDuration: '0.7s' }} />
+            <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#06b6d4', animationDelay: '140ms', animationDuration: '0.7s' }} />
+            <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#67e8f9', animationDelay: '280ms', animationDuration: '0.7s' }} />
           </div>
         </div>
         <p
@@ -116,8 +116,8 @@ export const ChatPanel = React.memo(function ChatPanel({ messages, onSendMessage
       className="flex flex-col h-full rounded-2xl overflow-hidden border"
       style={{
         background: 'rgba(255,255,255,0.97)',
-        borderColor: 'rgba(99,102,241,0.15)',
-        boxShadow: '0 8px 48px rgba(99,102,241,0.12), 0 2px 8px rgba(0,0,0,0.08)',
+        borderColor: 'rgba(14,165,233,0.15)',
+        boxShadow: '0 8px 48px rgba(14,165,233,0.12), 0 2px 8px rgba(0,0,0,0.08)',
       }}
     >
       {/* Live Region for Screen Readers */}
@@ -128,7 +128,7 @@ export const ChatPanel = React.memo(function ChatPanel({ messages, onSendMessage
       {/* Header */}
       <header
         className="px-5 py-4 flex items-center gap-3"
-        style={{ background: 'linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)' }}
+        style={{ background: 'linear-gradient(135deg, #0369a1 0%, #0891b2 100%)' }}
       >
         <div className="w-9 h-9 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(255,255,255,0.18)', boxShadow: '0 0 12px rgba(255,255,255,0.15)' }}
@@ -140,7 +140,7 @@ export const ChatPanel = React.memo(function ChatPanel({ messages, onSendMessage
           <p className="text-xs font-medium text-white/60">Your AI Travel Buddy</p>
         </div>
         {isLoading && (
-          <span className="ml-auto text-xs font-semibold px-3 py-1 rounded-full text-indigo-200 fade-up"
+          <span className="ml-auto text-xs font-semibold px-3 py-1 rounded-full text-sky-200 fade-up"
             style={{ background: 'rgba(255,255,255,0.12)' }}
             aria-hidden="true">
             Thinking...
@@ -154,14 +154,14 @@ export const ChatPanel = React.memo(function ChatPanel({ messages, onSendMessage
         role="log"
         aria-live="polite"
         aria-atomic="false"
-        style={{ background: 'linear-gradient(180deg, #fafbff 0%, #f4f3ff 100%)' }}
+        style={{ background: 'linear-gradient(180deg, #f8fbff 0%, #f0f8ff 100%)' }}
       >
         {messages.map((msg) => (
           <React.Fragment key={msg.id}>
             <div className={`flex ${msg.sender === 'user' ? 'justify-end msg-user' : 'justify-start msg-bot'}`}>
               {msg.sender !== 'user' && (
                 <div className="w-7 h-7 rounded-full flex items-center justify-center mr-2 mt-1 flex-shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', boxShadow: '0 2px 8px rgba(99,102,241,0.35)' }}
+                  style={{ background: 'linear-gradient(135deg, #0ea5e9, #06b6d4)', boxShadow: '0 2px 8px rgba(14,165,233,0.35)' }}
                   aria-hidden="true">
                   <Sparkles size={13} className="text-white" />
                 </div>
@@ -172,22 +172,22 @@ export const ChatPanel = React.memo(function ChatPanel({ messages, onSendMessage
                   msg.sender === 'user'
                     ? 'text-white rounded-br-sm max-w-[78%]'
                     : msg.itinerary
-                      ? 'text-indigo-950 rounded-bl-sm w-full max-w-[95%] sm:max-w-[88%]'
-                      : 'text-indigo-950 rounded-bl-sm max-w-[78%]'
+                      ? 'text-slate-900 rounded-bl-sm w-full max-w-[95%] sm:max-w-[88%]'
+                      : 'text-slate-900 rounded-bl-sm max-w-[78%]'
                 }`}
                 style={msg.sender === 'user' ? {
-                  background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-                  boxShadow: '0 3px 16px rgba(99,102,241,0.35)',
+                  background: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)',
+                  boxShadow: '0 3px 16px rgba(14,165,233,0.35)',
                 } : {
                   background: 'white',
-                  border: '1px solid rgba(99,102,241,0.12)',
-                  boxShadow: '0 2px 12px rgba(99,102,241,0.07)',
+                  border: '1px solid rgba(14,165,233,0.12)',
+                  boxShadow: '0 2px 12px rgba(14,165,233,0.07)',
                 }}
               >
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.text}</p>
 
                 {msg.itinerary && (
-                  <div className="mt-4 pt-4 border-t border-indigo-100">
+                  <div className="mt-4 pt-4 border-t border-sky-100">
                     <div className="rounded-2xl p-4 overflow-hidden"
                       style={{ background: 'linear-gradient(160deg, #0f0720 0%, #1a103a 100%)', boxShadow: 'inset 0 2px 16px rgba(0,0,0,0.3)' }}>
                       <ItineraryBuilder itinerary={msg.itinerary} previousItinerary={msg.previousItinerary} />
@@ -208,8 +208,8 @@ export const ChatPanel = React.memo(function ChatPanel({ messages, onSendMessage
                     key={idx}
                     onClick={() => onSendMessage(suggestion)}
                     aria-label={`Send suggested reply: ${suggestion}`}
-                    className="chip-hover text-xs font-medium px-3 py-1.5 rounded-full border text-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
-                    style={{ background: 'rgba(99,102,241,0.06)', borderColor: 'rgba(99,102,241,0.2)' }}
+                    className="chip-hover text-xs font-medium px-3 py-1.5 rounded-full border text-sky-600 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none"
+                    style={{ background: 'rgba(14,165,233,0.06)', borderColor: 'rgba(14,165,233,0.2)' }}
                   >
                     {suggestion}
                   </button>
@@ -224,7 +224,7 @@ export const ChatPanel = React.memo(function ChatPanel({ messages, onSendMessage
       </div>
 
       {/* Input */}
-      <footer className="px-4 py-3 border-t" style={{ borderColor: 'rgba(99,102,241,0.1)', background: 'white' }}>
+      <footer className="px-4 py-3 border-t" style={{ borderColor: 'rgba(14,165,233,0.1)', background: 'white' }}>
         <form onSubmit={handleSubmit} className="flex gap-2 items-center">
           <label htmlFor="chat-input" className="sr-only">Type your message</label>
           <input
@@ -234,23 +234,23 @@ export const ChatPanel = React.memo(function ChatPanel({ messages, onSendMessage
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={isLoading ? "TripPal is thinking..." : "Where do you want to go? ✈️"}
-            className="flex-1 rounded-xl px-4 py-2.5 text-sm text-indigo-950 focus-visible:outline-none transition-all duration-200 disabled:opacity-50"
-            style={{ background: '#f5f3ff', border: '1.5px solid rgba(99,102,241,0.2)' }}
-            onFocus={e => (e.target.style.borderColor = 'rgba(99,102,241,0.6)', e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)')}
-            onBlur={e => (e.target.style.borderColor = 'rgba(99,102,241,0.2)', e.target.style.boxShadow = 'none')}
+            className="flex-1 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus-visible:outline-none transition-all duration-200 disabled:opacity-50"
+            style={{ background: '#f5f3ff', border: '1.5px solid rgba(14,165,233,0.2)' }}
+            onFocus={e => (e.target.style.borderColor = 'rgba(14,165,233,0.6)', e.target.style.boxShadow = '0 0 0 3px rgba(14,165,233,0.12)')}
+            onBlur={e => (e.target.style.borderColor = 'rgba(14,165,233,0.2)', e.target.style.boxShadow = 'none')}
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="btn-press p-2.5 rounded-xl text-white disabled:opacity-35 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none transition-all duration-150"
-            style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', boxShadow: input.trim() ? '0 4px 16px rgba(99,102,241,0.45)' : 'none' }}
+            className="btn-press p-2.5 rounded-xl text-white disabled:opacity-35 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none transition-all duration-150"
+            style={{ background: 'linear-gradient(135deg, #0ea5e9, #06b6d4)', boxShadow: input.trim() ? '0 4px 16px rgba(14,165,233,0.45)' : 'none' }}
             aria-label="Send message"
           >
             <Send size={18} aria-hidden="true" />
           </button>
         </form>
-        <p className="text-[10px] text-center mt-2" style={{ color: '#a5b4fc' }}>
+        <p className="text-[10px] text-center mt-2" style={{ color: '#7dd3fc' }}>
           Powered by Gemini AI · Press ⌘+Enter to send
         </p>
       </footer>

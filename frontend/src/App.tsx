@@ -241,16 +241,16 @@ function App() {
   }, [messages, currentSlots]);
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0b0720 0%, #130d35 35%, #0a1628 70%, #060b1a 100%)' }}>
+    <div className="min-h-screen flex flex-col relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #020d1a 0%, #051828 35%, #03111f 70%, #020a14 100%)' }}>
 
       {/* Ambient floating orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="orb-1 absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-20"
-          style={{ background: 'radial-gradient(circle, #6366f1 0%, #4f46e5 40%, transparent 70%)' }} />
-        <div className="orb-2 absolute top-1/3 -right-40 w-80 h-80 rounded-full opacity-15"
-          style={{ background: 'radial-gradient(circle, #8b5cf6 0%, #7c3aed 40%, transparent 70%)' }} />
-        <div className="orb-3 absolute -bottom-24 left-1/3 w-72 h-72 rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, #06b6d4 0%, #0284c7 40%, transparent 70%)' }} />
+        <div className="orb-1 absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-25"
+          style={{ background: 'radial-gradient(circle, #0ea5e9 0%, #0284c7 40%, transparent 70%)' }} />
+        <div className="orb-2 absolute top-1/3 -right-40 w-80 h-80 rounded-full opacity-20"
+          style={{ background: 'radial-gradient(circle, #06b6d4 0%, #0891b2 40%, transparent 70%)' }} />
+        <div className="orb-3 absolute -bottom-24 left-1/3 w-72 h-72 rounded-full opacity-15"
+          style={{ background: 'radial-gradient(circle, #38bdf8 0%, #0ea5e9 40%, transparent 70%)' }} />
       </div>
 
       {/* Header — glassmorphism */}
@@ -265,18 +265,18 @@ function App() {
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 0 20px rgba(99,102,241,0.4)' }}>
+            style={{ background: 'linear-gradient(135deg, #0ea5e9, #06b6d4)', boxShadow: '0 0 20px rgba(14,165,233,0.45)' }}>
             <Plane size={20} className="text-white" aria-hidden="true" />
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white">TripPal</h1>
-            <p className="text-xs font-medium opacity-60" style={{ color: '#a5b4fc' }}>Intelligent Travel Experience Engine</p>
+            <p className="text-xs font-medium opacity-60" style={{ color: '#7dd3fc' }}>Intelligent Travel Experience Engine</p>
           </div>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border"
-          style={{ background: 'rgba(99,102,241,0.1)', borderColor: 'rgba(99,102,241,0.25)' }}>
-          <Globe size={14} className="text-indigo-400" aria-hidden="true" />
-          <span className="text-xs font-medium text-indigo-400">Powered by Gemini</span>
+          style={{ background: 'rgba(14,165,233,0.12)', borderColor: 'rgba(14,165,233,0.28)' }}>
+          <Globe size={14} style={{ color: '#38bdf8' }} aria-hidden="true" />
+          <span className="text-xs font-medium" style={{ color: '#38bdf8' }}>Powered by Gemini</span>
         </div>
       </header>
 

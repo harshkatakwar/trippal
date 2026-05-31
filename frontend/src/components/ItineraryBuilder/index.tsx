@@ -54,9 +54,9 @@ function BudgetBreakdown({ itinerary }: { itinerary: DayPlan[] }) {
   if (total === 0) return null;
 
   const bars = [
-    { label: 'Activities', cost: activitiesCost, color: '#6366f1' },
-    { label: 'Stay',       cost: stayCost,        color: '#8b5cf6' },
-    { label: 'Transit',    cost: transitCost,      color: '#a78bfa' },
+    { label: 'Activities', cost: activitiesCost, color: '#0ea5e9' },
+    { label: 'Stay',       cost: stayCost,        color: '#06b6d4' },
+    { label: 'Transit',    cost: transitCost,      color: '#67e8f9' },
   ].filter(b => b.cost > 0);
 
   return (
@@ -66,7 +66,7 @@ function BudgetBreakdown({ itinerary }: { itinerary: DayPlan[] }) {
     >
       <div className="flex justify-between items-center mb-2.5">
         <span className="text-xs font-bold text-white/70">Budget Breakdown</span>
-        <span className="text-xs font-bold text-indigo-300">
+        <span className="text-xs font-bold text-sky-300">
           Total ₹{total.toLocaleString('en-IN')}
         </span>
       </div>
@@ -127,9 +127,9 @@ function DiffView({ current, previous }: { current: DayPlan; previous?: DayPlan 
   return (
     <div
       className="mb-3 p-2.5 rounded-lg border space-y-1.5"
-      style={{ background: 'rgba(99,102,241,0.08)', borderColor: 'rgba(99,102,241,0.2)' }}
+      style={{ background: 'rgba(14,165,233,0.08)', borderColor: 'rgba(14,165,233,0.2)' }}
     >
-      <p className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Changes</p>
+      <p className="text-[10px] font-bold text-sky-300 uppercase tracking-wider">Changes</p>
       {diffs.map(diff => (
         <div key={diff.label} className="text-[11px] leading-snug">
           <span className="text-white/40">{diff.label}: </span>
@@ -239,14 +239,14 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Segoe UI',Arial,sans-serif;color:#1e1b4b;padding:36px;font-size:13px}
-    .header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #6366f1;padding-bottom:14px;margin-bottom:20px}
-    .header h1{font-size:22px;color:#4f46e5;font-weight:800}
+    .header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #0ea5e9;padding-bottom:14px;margin-bottom:20px}
+    .header h1{font-size:22px;color:#0ea5e9;font-weight:800}
     .header p{font-size:12px;color:#6b7280;margin-top:3px}
-    .total-box{background:#f5f3ff;border:1px solid #c7d2fe;border-radius:8px;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+    .total-box{background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
     .total-box .label{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
-    .total-box .amount{font-size:22px;font-weight:800;color:#4f46e5}
-    .day{margin-bottom:24px;page-break-inside:avoid;border:1px solid #e0e7ff;border-radius:10px;overflow:hidden}
-    .day-header{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center}
+    .total-box .amount{font-size:22px;font-weight:800;color:#0ea5e9}
+    .day{margin-bottom:24px;page-break-inside:avoid;border:1px solid #e0f2fe;border-radius:10px;overflow:hidden}
+    .day-header{background:linear-gradient(135deg,#0ea5e9,#06b6d4);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center}
     .day-pill{font-size:11px;font-weight:700;background:rgba(255,255,255,.25);padding:2px 8px;border-radius:20px;margin-right:8px}
     .day-theme{font-size:13px;font-weight:600}
     .day-right{display:flex;align-items:center;gap:10px}
@@ -254,15 +254,15 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
     .day-cost{font-size:13px;font-weight:700}
     .day-body{padding:14px 16px}
     .slot{margin-bottom:12px}
-    .slot-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6366f1;margin-bottom:6px}
+    .slot-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#0ea5e9;margin-bottom:6px}
     .activity{display:flex;justify-content:space-between;align-items:flex-start;background:#f9f7ff;border-radius:6px;padding:8px 10px;margin-bottom:5px}
     .act-name{font-size:12px;font-weight:600;color:#1e1b4b}
     .act-desc{font-size:11px;color:#6b7280;margin-top:2px;line-height:1.4}
     .act-meta{font-size:10px;color:#9ca3af;margin-top:3px}
-    .act-cost{font-size:12px;font-weight:700;color:#4f46e5;white-space:nowrap;margin-left:10px;flex-shrink:0}
-    .stay{display:flex;justify-content:space-between;font-size:12px;color:#6b7280;padding-top:10px;border-top:1px solid #e0e7ff;margin-top:6px}
+    .act-cost{font-size:12px;font-weight:700;color:#0ea5e9;white-space:nowrap;margin-left:10px;flex-shrink:0}
+    .stay{display:flex;justify-content:space-between;font-size:12px;color:#6b7280;padding-top:10px;border-top:1px solid #e0f2fe;margin-top:6px}
     .transit{font-size:11px;color:#9ca3af;font-style:italic;margin-top:6px}
-    .footer{margin-top:28px;padding-top:12px;border-top:1px solid #e0e7ff;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af}
+    .footer{margin-top:28px;padding-top:12px;border-top:1px solid #e0f2fe;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af}
     @media print{body{padding:20px}.day{page-break-inside:avoid}}
   </style>
 </head>
@@ -299,8 +299,8 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
         style={{ background: 'rgba(255,255,255,0.02)' }}
         role="status"
       >
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-indigo-500/15" aria-hidden="true">
-          <MapPin size={28} className="text-indigo-400" />
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-sky-500/15" aria-hidden="true">
+          <MapPin size={28} className="text-sky-400" />
         </div>
         <div className="text-center">
           <p className="font-semibold mb-1 text-white/70">No itinerary yet</p>
@@ -321,7 +321,7 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
       <header className="flex justify-between items-start mb-2">
         <h5 className="font-semibold text-sm text-white/90">{activity.name}</h5>
         <span
-          className="flex items-center text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2 bg-indigo-500/20 text-indigo-300"
+          className="flex items-center text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2 bg-sky-500/20 text-sky-300"
           aria-label={`Cost: ${activity.costInr || 0} rupees`}
         >
           <IndianRupee size={10} className="mr-0.5" aria-hidden="true" />
@@ -392,9 +392,9 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
       <div className="flex items-center gap-1.5 mb-4 flex-wrap">
         <button
           onClick={() => setActiveDay('all')}
-          className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+          className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
             activeDay === 'all'
-              ? 'bg-indigo-600 text-white'
+              ? 'bg-sky-500 text-white'
               : 'bg-white/10 text-white/50 hover:bg-white/15'
           }`}
         >
@@ -405,9 +405,9 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
             key={day.day}
             onClick={() => setActiveDay(day.day)}
             aria-label={`View Day ${day.day}`}
-            className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+            className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
               activeDay === day.day
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-sky-500 text-white'
                 : 'bg-white/10 text-white/50 hover:bg-white/15'
             }`}
           >
@@ -418,7 +418,7 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
           <button
             onClick={handleCopy}
             aria-label="Copy itinerary text for WhatsApp"
-            className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-white/10 text-white/50 hover:bg-white/15 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-white/10 text-white/50 hover:bg-white/15 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
           >
             {copied ? <Check size={11} /> : <Copy size={11} />}
             {copied ? 'Copied!' : 'Copy'}
@@ -426,7 +426,7 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
           <button
             onClick={handlePdf}
             aria-label="Download itinerary as PDF"
-            className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-600/60 text-indigo-200 hover:bg-indigo-600/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+            className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-sky-500/60 text-sky-200 hover:bg-sky-500/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
           >
             <FileDown size={11} />
             PDF
@@ -447,11 +447,11 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
               <header className="flex justify-between items-start mb-4 pb-3 border-b border-white/10">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white">
                       Day {dayPlan.day}
                     </span>
                     {dayPlan.theme && (
-                      <span className="text-xs font-medium text-indigo-300">{dayPlan.theme}</span>
+                      <span className="text-xs font-medium text-sky-300">{dayPlan.theme}</span>
                     )}
                   </div>
                   {dayPlan.date && (
@@ -470,7 +470,7 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
                   )}
                 </div>
                 <span
-                  className="text-sm font-bold flex items-center text-indigo-300 flex-shrink-0 ml-2"
+                  className="text-sm font-bold flex items-center text-sky-300 flex-shrink-0 ml-2"
                   aria-label={`Estimated daily cost: ${dayPlan.estimatedCostInr} rupees`}
                 >
                   <IndianRupee size={13} className="mr-0.5" aria-hidden="true" />
@@ -485,19 +485,19 @@ export const ItineraryBuilder = React.memo(function ItineraryBuilder({
               <div className="space-y-4">
                 {renderTimeSlot('Morning',   dayPlan.morning,   Sunrise, '#f59e0b', '#f97316')}
                 {renderTimeSlot('Afternoon', dayPlan.afternoon, Sun,    '#06b6d4', '#3b82f6')}
-                {renderTimeSlot('Evening',   dayPlan.evening,   Moon,   '#8b5cf6', '#6366f1')}
+                {renderTimeSlot('Evening',   dayPlan.evening,   Moon,   '#06b6d4', '#0ea5e9')}
               </div>
 
               {/* Accommodation */}
               {dayPlan.accommodation && dayPlan.accommodation !== 'In your comfort zone' && (
                 <footer className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Building size={13} className="text-indigo-300" aria-hidden="true" />
+                    <Building size={13} className="text-sky-300" aria-hidden="true" />
                     <span className="text-xs font-semibold text-white/60">Stay:</span>
                     <span className="text-xs text-white/40">{dayPlan.accommodation}</span>
                   </div>
                   {(dayPlan.accommodationCostInr ?? 0) > 0 && (
-                    <span className="text-xs font-bold text-indigo-300">
+                    <span className="text-xs font-bold text-sky-300">
                       ₹{(dayPlan.accommodationCostInr ?? 0).toLocaleString('en-IN')}/night
                     </span>
                   )}
