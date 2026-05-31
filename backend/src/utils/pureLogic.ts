@@ -10,9 +10,11 @@ export function sanitizeInput(input: string): string {
 }
 
 /**
- * Pure function to extract JSON from markdown code blocks
+ * Pure function to extract JSON from markdown code blocks.
+ * Matches the first fenced code block if present; otherwise returns the raw text.
  */
 export function extractJsonFromMarkdown(text: string): string {
   if (!text) return "";
-  return text.replace(/^```(?:json)?\s*/m, '').replace(/```\s*$/m, '').trim();
+  const match = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  return match ? match[1].trim() : text.trim();
 }

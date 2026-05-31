@@ -1,12 +1,12 @@
 import { getModel } from './geminiClient.js';
-import { TravelSlots } from '../types/travel.js';
+import { TravelSlots, DayPlan, Activity } from '../types/travel.js';
 import { searchPlaces, getDirections, getForecast } from './mapsService.js';
-import { FunctionDeclaration, SchemaType } from '@google/generative-ai';
+import { FunctionDeclaration, SchemaType, ChatSession, GenerateContentResult } from '@google/generative-ai';
 import { extractJsonFromMarkdown } from '../utils/pureLogic.js';
 import { PROMPT_INJECTION_GUARD, MAX_FUNCTION_CALLS } from '../utils/constants.js';
 import { LRUCache } from 'lru-cache';
 
-const itineraryCache = new LRUCache<string, any[]>({
+const itineraryCache = new LRUCache<string, DayPlan[]>({
   max: 500,
   ttl: 1000 * 60 * 60 * 24 // 24 hours
 });
@@ -123,7 +123,7 @@ const DAYPLAN_SCHEMA = `
 /**
  * Handles LLM function calls iteratively up to the max limit
  */
-async function processFunctionCalls(chat: any, initialResponse: any) {
+async function processFunctionCalls(chat: ChatSession, initialResponse: GenerateContentResult): Promise<GenerateContentResult> {
   let response = initialResponse;
   let callCount = 0;
 
@@ -172,35 +172,42 @@ async function processFunctionCalls(chat: any, initialResponse: any) {
 /**
  * Normalizes the parsed itinerary to ensure strict schema conformance
  */
-function normalizeItinerary(parsedJson: any) {
-  const itineraryArray = Array.isArray(parsedJson) ? parsedJson : (parsedJson.itinerary || parsedJson.days || [parsedJson]);
-  
-  return itineraryArray.map((dayPlan: Record<string, any>, index: number) => {
+export function normalizeItinerary(parsedJson: unknown): DayPlan[] {
+  const root = parsedJson as Record<string, unknown>;
+  const itineraryArray: Record<string, unknown>[] = Array.isArray(parsedJson)
+    ? parsedJson as Record<string, unknown>[]
+    : Array.isArray(root.itinerary)
+      ? root.itinerary as Record<string, unknown>[]
+      : Array.isArray(root.days)
+        ? root.days as Record<string, unknown>[]
+        : [root];
+
+  return itineraryArray.map((dayPlan, index) => {
     const isLastDay = index === itineraryArray.length - 1;
-    let accommodation = dayPlan.accommodation || "To be decided";
+    let accommodation = typeof dayPlan.accommodation === 'string' ? dayPlan.accommodation : "To be decided";
     if (isLastDay) {
       accommodation = "In your comfort zone";
     }
 
-    const morning = Array.isArray(dayPlan.morning) ? dayPlan.morning : [];
-    const afternoon = Array.isArray(dayPlan.afternoon) ? dayPlan.afternoon : [];
-    const evening = Array.isArray(dayPlan.evening) ? dayPlan.evening : [];
-    
+    const morning: Activity[] = Array.isArray(dayPlan.morning) ? dayPlan.morning as Activity[] : [];
+    const afternoon: Activity[] = Array.isArray(dayPlan.afternoon) ? dayPlan.afternoon as Activity[] : [];
+    const evening: Activity[] = Array.isArray(dayPlan.evening) ? dayPlan.evening as Activity[] : [];
+
     const allActivities = [...morning, ...afternoon, ...evening];
     const activitiesCost = allActivities.reduce((acc, curr) => acc + (curr.costInr || 0), 0);
-    const accommodationCostInr = dayPlan.accommodationCostInr || 0;
+    const accommodationCostInr = typeof dayPlan.accommodationCostInr === 'number' ? dayPlan.accommodationCostInr : 0;
 
     return {
-      day: dayPlan.day || index + 1,
-      date: dayPlan.date || new Date(Date.now() + index * 86400000).toISOString().split('T')[0],
-      theme: dayPlan.theme || "Exploration",
+      day: typeof dayPlan.day === 'number' ? dayPlan.day : index + 1,
+      date: typeof dayPlan.date === 'string' ? dayPlan.date : new Date(Date.now() + index * 86400000).toISOString().split('T')[0],
+      theme: typeof dayPlan.theme === 'string' ? dayPlan.theme : "Exploration",
       morning,
       afternoon,
       evening,
       accommodation,
       accommodationCostInr,
       estimatedCostInr: activitiesCost + accommodationCostInr,
-      transitNotes: dayPlan.transitNotes || dayPlan.transit_notes || ""
+      transitNotes: typeof dayPlan.transitNotes === 'string' ? dayPlan.transitNotes : typeof dayPlan.transit_notes === 'string' ? dayPlan.transit_notes : ""
     };
   });
 }

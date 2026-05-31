@@ -22,6 +22,10 @@ describe('Backend pureLogic', () => {
       expect(result.length).toBe(MAX_INPUT_LENGTH);
       expect(result).toBe('B'.repeat(MAX_INPUT_LENGTH));
     });
+
+    it('returns empty string for null/undefined-like falsy', () => {
+      expect(sanitizeInput('')).toBe('');
+    });
   });
 
   describe('extractJsonFromMarkdown', () => {
@@ -38,6 +42,15 @@ describe('Backend pureLogic', () => {
     it('handles raw JSON string', () => {
       const raw = '{"test": true}';
       expect(extractJsonFromMarkdown(raw)).toBe('{"test": true}');
+    });
+
+    it('extracts first code block when multiple are present', () => {
+      const markdown = '```json\n{"first": true}\n```\n\nSome text\n\n```json\n{"second": true}\n```';
+      expect(extractJsonFromMarkdown(markdown)).toBe('{"first": true}');
+    });
+
+    it('returns empty string for empty input', () => {
+      expect(extractJsonFromMarkdown('')).toBe('');
     });
   });
 });

@@ -36,3 +36,28 @@ export const TravelSlotsSchema = z.object({
 });
 
 export type TravelSlots = z.infer<typeof TravelSlotsSchema>;
+
+export interface Activity {
+  name: string;
+  description: string;
+  durationMinutes: number;
+  location: string;
+  placeId: string;
+  costInr: number;
+  category: string;
+  accessibilityNotes: string;
+  rating: number;
+}
+
+export interface DayPlan {
+  day: number;
+  date: string;
+  theme: string;
+  morning: Activity[];
+  afternoon: Activity[];
+  evening: Activity[];
+  accommodation: string;
+  accommodationCostInr: number;
+  estimatedCostInr: number;
+  transitNotes: string;
+}
