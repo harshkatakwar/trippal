@@ -136,6 +136,7 @@ function App() {
           if (!mergedSlots.origin) missing.push('origin');
           if (!mergedSlots.travelDate) missing.push('travelDate');
           if (!mergedSlots.numTravelers) missing.push('numTravelers');
+          if (!mergedSlots.budgetInr) missing.push('budgetInr');
           mergedSlots.missingSlots = missing;
         }
 
