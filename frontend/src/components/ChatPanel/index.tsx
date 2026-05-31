@@ -157,6 +157,7 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
               </div>
             )}
             <div 
+              role={msg.text.includes('⚠️') ? 'alert' : undefined}
               className={`max-w-[78%] rounded-2xl px-4 py-2.5 shadow-sm ${
                 msg.sender === 'user' ? 'bg-gradient-to-br from-indigo-600 to-indigo-500 text-white rounded-br-sm' : 'bg-white text-indigo-950 border border-indigo-100 rounded-bl-sm'
               }`}
@@ -175,7 +176,7 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
                   key={idx}
                   onClick={() => onSendMessage(suggestion)}
                   aria-label={`Send suggested reply: ${suggestion}`}
-                  className="text-xs font-medium px-3 py-1.5 rounded-full border border-indigo-200 bg-white/70 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-colors"
+                  className="text-xs font-medium px-3 py-1.5 rounded-full border border-indigo-200 bg-white/70 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none transition-colors"
                 >
                   {suggestion}
                 </button>
@@ -199,13 +200,13 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={isLoading ? "TripPal is thinking..." : "Where do you want to go? ✈️"}
-            className="flex-1 rounded-xl px-4 py-2.5 text-sm border border-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-indigo-950 bg-white disabled:bg-indigo-50"
+            className="flex-1 rounded-xl px-4 py-2.5 text-sm border border-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-indigo-950 bg-white disabled:bg-indigo-50"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="p-2.5 rounded-xl transition-all duration-200 bg-gradient-to-br from-indigo-600 to-purple-600 text-white disabled:opacity-40 hover:opacity-90 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            className="p-2.5 rounded-xl transition-all duration-200 bg-gradient-to-br from-indigo-600 to-purple-600 text-white disabled:opacity-40 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
             aria-label="Send message"
           >
             <Send size={18} aria-hidden="true" />

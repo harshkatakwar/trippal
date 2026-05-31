@@ -76,7 +76,7 @@ export function ItineraryBuilder({ itinerary }: ItineraryBuilderProps) {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto space-y-5 pr-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md" tabIndex={0} aria-label="Generated Itinerary">
+    <div className="flex-1 overflow-y-auto space-y-5 pr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-md" tabIndex={0} aria-label="Generated Itinerary">
       {itinerary.map((dayPlan) => (
         <article
           key={dayPlan.day}

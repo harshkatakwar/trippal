@@ -14,5 +14,5 @@ export function sanitizeInput(input: string): string {
  */
 export function extractJsonFromMarkdown(text: string): string {
   if (!text) return "";
-  return text.replace(/^```json\s*/m, '').replace(/```\s*$/m, '').trim();
+  return text.replace(/^```(?:json)?\s*/m, '').replace(/```\s*$/m, '').trim();
 }

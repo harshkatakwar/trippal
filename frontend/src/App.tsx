@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { ChatPanel } from './components/ChatPanel';
 import { ItineraryBuilder } from './components/ItineraryBuilder';
 import type { ChatMessage, DayPlan, TravelSlots } from './types/travel';
@@ -19,11 +19,13 @@ function App() {
   const [itinerary, setItinerary] = useState<DayPlan[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Clean up side effects on unmount
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
   }, []);
 
@@ -103,42 +105,43 @@ function App() {
     setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
 
-    try {
-      // Cap conversation history to MAX_HISTORY_TURNS turns to save memory/tokens
-      const history = messages.slice(-MAX_HISTORY_TURNS).map(m => `${m.sender}: ${m.text}`);
-      
-      // TEST T1 — happy path: valid input → correct output rendered
-      const slots = await classifyIntent(text, history, signal);
+    const recentHistory = messages.slice(-MAX_HISTORY_TURNS).map(m => `${m.sender}: ${m.text}`);
 
-      if (slots.intent === 'plan_trip') {
-        if (slots.missingSlots && slots.missingSlots.length > 0) {
-          processMissingSlots(slots);
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+
+    debounceTimerRef.current = setTimeout(async () => {
+      try {
+        // TEST T1 — happy path: valid input → correct output rendered
+        const slots = await classifyIntent(text, recentHistory, signal);
+
+        if (slots.intent === 'plan_trip') {
+          if (slots.missingSlots && slots.missingSlots.length > 0) {
+            processMissingSlots(slots);
+          } else {
+            await processItinerary(slots, signal);
+          }
         } else {
-          await processItinerary(slots, signal);
+          processOtherIntent(slots.intent);
         }
-      } else {
-        processOtherIntent(slots.intent);
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          return; // Don't show error state on intentional abort
+        }
+        
+        // TEST T4 — network/API error: user-friendly message shown, no crash
+        const errorMsg: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          sender: 'trippal',
+          text: '⚠️ Oops! Something went wrong on my end.\n\nPlease make sure the backend server is running and try again in a moment.',
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, errorMsg]);
+      } finally {
+        if (!signal.aborted) {
+          setIsLoading(false);
+        }
       }
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.log('Request aborted');
-        return; // Don't show error state on intentional abort
-      }
-      
-      // TEST T4 — network/API error: user-friendly message shown, no crash
-      console.error(error);
-      const errorMsg: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        sender: 'trippal',
-        text: '⚠️ Oops! Something went wrong on my end.\n\nPlease make sure the backend server is running and try again in a moment.',
-        timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, errorMsg]);
-    } finally {
-      if (!signal.aborted) {
-        setIsLoading(false);
-      }
-    }
+    }, 500); // 500ms debounce
   }, [messages]);
 
   return (
@@ -174,16 +177,17 @@ function App() {
           <div className="rounded-2xl shadow-lg h-full flex flex-col p-6 overflow-hidden border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}>
             <h2 className="text-xl font-bold mb-5 flex-shrink-0 flex items-center gap-2 text-white">
               <span className="bg-clip-text text-transparent bg-gradient-to-br from-purple-400 to-indigo-400">Your Itinerary</span>
-              {itinerary.length > 0 && (
+              {useMemo(() => (itinerary.length > 0 && (
                 <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300">
                   {itinerary.length} days
                 </span>
-              )}
+              )), [itinerary.length])}
             </h2>
             <ItineraryBuilder itinerary={itinerary} />
           </div>
         </div>
       </main>
+      <footer className="sr-only">TripPal Application Footer</footer>
     </div>
   );
 }
