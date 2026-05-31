@@ -160,7 +160,7 @@ function App() {
         const errorMsg: ChatMessage = {
           id: (Date.now() + 1).toString(),
           sender: 'trippal',
-          text: '⚠️ Oops! Something went wrong on my end.\n\nPlease make sure the backend server is running and try again in a moment.',
+          text: `⚠️ Oops! Something went wrong on my end.\n\nError details: ${error.message || 'Unknown error'}\n\nPlease make sure the backend server is running and try again in a moment.`,
           timestamp: new Date().toISOString()
         };
         setMessages(prev => [...prev, errorMsg]);

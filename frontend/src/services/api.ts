@@ -14,7 +14,8 @@ export const classifyIntent = async (
   });
   
   if (!res.ok) {
-    throw new Error('Failed to classify intent');
+    const errData = await res.json().catch(() => null);
+    throw new Error(errData?.message || errData?.error || 'Failed to classify intent');
   }
   
   return res.json();
@@ -41,7 +42,8 @@ export const generateItinerary = async (
   });
   
   if (!res.ok) {
-    throw new Error('Failed to generate itinerary');
+    const errData = await res.json().catch(() => null);
+    throw new Error(errData?.message || errData?.error || 'Failed to generate itinerary');
   }
   
   return res.json();
