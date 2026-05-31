@@ -50,13 +50,81 @@ const tools = [
   }
 ];
 
+const DAYPLAN_SCHEMA = `
+[
+  {
+    "day": 1,
+    "date": "2026-06-01",
+    "theme": "Arrival & Beach Vibes",
+    "morning": [
+      {
+        "name": "Calangute Beach",
+        "description": "Start your trip with a relaxing visit to one of Goa's most popular beaches.",
+        "durationMinutes": 120,
+        "location": "Calangute, North Goa",
+        "placeId": "place_calangute",
+        "costInr": 0,
+        "category": "beach",
+        "accessibilityNotes": "Sandy terrain",
+        "rating": 4.3
+      }
+    ],
+    "afternoon": [
+      {
+        "name": "Lunch at Britto's",
+        "description": "Enjoy seafood and Goan cuisine at this iconic beachside restaurant.",
+        "durationMinutes": 90,
+        "location": "Baga Beach Road",
+        "placeId": "place_brittos",
+        "costInr": 1500,
+        "category": "food",
+        "accessibilityNotes": "Wheelchair accessible",
+        "rating": 4.1
+      }
+    ],
+    "evening": [
+      {
+        "name": "Tito's Lane",
+        "description": "Experience Goa's famous nightlife at Tito's Lane.",
+        "durationMinutes": 180,
+        "location": "Baga, North Goa",
+        "placeId": "place_titos",
+        "costInr": 2000,
+        "category": "nightlife",
+        "accessibilityNotes": "Crowded area",
+        "rating": 4.0
+      }
+    ],
+    "accommodation": "Hotel Fidalgo, Panaji",
+    "estimatedCostInr": 8000,
+    "transitNotes": "Taxi from airport to hotel: ~45 mins"
+  }
+]`;
+
 export async function generateItinerary(slots: TravelSlots, constraints: any, preferences: any) {
-  const systemInstruction = "You are TripPal, an expert travel planner.\nTODAY: " + new Date().toISOString() + "\n\nHARD CONSTRAINTS:\nTotal budget: ₹" + constraints.budgetTotal + "\nTravel dates: " + constraints.departure + " to " + constraints.return + "\n\nPLANNING RULES:\nNever exceed total budget.\nAlways verify venues via search_places before recommending.\nReturn ONLY JSON matching the DayPlan array schema. No prose.";
+  const systemInstruction = [
+    "You are TripPal, an expert Indian travel planner with deep local knowledge.",
+    "TODAY: " + new Date().toISOString(),
+    "",
+    "HARD CONSTRAINTS:",
+    "Total budget: ₹" + constraints.budgetTotal,
+    "Travel dates: " + constraints.departure + " to " + constraints.return,
+    "",
+    "PLANNING RULES:",
+    "- Never exceed total budget.",
+    "- Each day MUST have at least 1 activity in morning, afternoon, and evening arrays.",
+    "- Every activity MUST have ALL these fields: name, description, durationMinutes (number), location (string), placeId (string), costInr (number), category (string), accessibilityNotes (string), rating (number 0-5).",
+    "- estimatedCostInr for each day should be the sum of all activity costs plus accommodation.",
+    "- Return ONLY a valid JSON array of DayPlan objects. No markdown, no prose, no explanation.",
+    "",
+    "EXACT OUTPUT SCHEMA (follow this structure precisely):",
+    DAYPLAN_SCHEMA
+  ].join("\n");
 
   const model = getModel(systemInstruction);
   const chat = model.startChat({ tools });
 
-  const prompt = "Generate an itinerary based on:\nSlots: " + JSON.stringify(slots) + "\nPreferences: " + JSON.stringify(preferences);
+  const prompt = "Generate a detailed day-by-day itinerary. Return ONLY a JSON array.\n\nTrip details:\n- Destination: " + (slots.destination || "Unknown") + "\n- Origin: " + (slots.origin || "Unknown") + "\n- Dates: " + (slots.travelDate || "today") + " to " + (slots.returnDate || "3 days from now") + "\n- Travelers: " + (slots.numTravelers || 2) + "\n- Budget: ₹" + (slots.budgetInr || 50000) + "\n- Preferences: " + (slots.preferences?.join(", ") || "general sightseeing");
 
   let response = await chat.sendMessage(prompt);
   let callCount = 0;
@@ -103,7 +171,24 @@ export async function generateItinerary(slots: TravelSlots, constraints: any, pr
   }
 
   const text = response.response.text();
-  const cleanedText = text.replace(/^```json/m, '').replace(/^```/m, '').trim();
+  // Strip markdown code fences if present
+  const cleanedText = text.replace(/^```json\s*/m, '').replace(/```\s*$/m, '').trim();
   
-  return JSON.parse(cleanedText);
+  const parsed = JSON.parse(cleanedText);
+  
+  // Ensure we always return an array
+  const itinerary = Array.isArray(parsed) ? parsed : (parsed.itinerary || parsed.days || [parsed]);
+  
+  // Ensure each day has the required arrays
+  return itinerary.map((day: any, index: number) => ({
+    day: day.day || index + 1,
+    date: day.date || new Date(Date.now() + index * 86400000).toISOString().split('T')[0],
+    theme: day.theme || "Exploration",
+    morning: Array.isArray(day.morning) ? day.morning : [],
+    afternoon: Array.isArray(day.afternoon) ? day.afternoon : [],
+    evening: Array.isArray(day.evening) ? day.evening : [],
+    accommodation: day.accommodation || "To be decided",
+    estimatedCostInr: day.estimatedCostInr || day.estimated_cost_inr || 0,
+    transitNotes: day.transitNotes || day.transit_notes || ""
+  }));
 }
