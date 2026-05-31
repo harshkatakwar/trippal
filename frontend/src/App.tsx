@@ -49,10 +49,14 @@ function App() {
   };
 
   const processItinerary = async (slots: TravelSlots, signal: AbortSignal) => {
+    const isModify = slots.intent === 'modify_trip';
+    
     const statusMsg: ChatMessage = {
       id: (Date.now() + 1).toString(),
       sender: 'trippal',
-      text: '🎉 I have everything I need! Crafting your perfect itinerary now...\n\nThis usually takes 10-20 seconds.',
+      text: isModify
+        ? 'Got it! 🛠️ Recrafting your itinerary with those updates...\n\nThis usually takes 10-20 seconds.'
+        : '🎉 I have everything I need! Crafting your perfect itinerary now...\n\nThis usually takes 10-20 seconds.',
       timestamp: new Date().toISOString()
     };
     setMessages(prev => [...prev, statusMsg]);
@@ -62,7 +66,9 @@ function App() {
     const doneMsg: ChatMessage = {
       id: (Date.now() + 2).toString(),
       sender: 'trippal',
-      text: '✅ Your itinerary is ready!\n\nHappy travels! 🌍✈️',
+      text: isModify 
+        ? '✅ Your updated itinerary is ready!\n\nHappy travels! 🌍✈️'
+        : '✅ Your itinerary is ready!\n\nHappy travels! 🌍✈️',
       timestamp: new Date().toISOString(),
       itinerary: newItinerary,
       suggestions: [
