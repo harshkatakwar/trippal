@@ -4,6 +4,12 @@ import { searchPlaces, getDirections, getForecast } from './mapsService.js';
 import { FunctionDeclaration, SchemaType } from '@google/generative-ai';
 import { extractJsonFromMarkdown } from '../utils/pureLogic.js';
 import { PROMPT_INJECTION_GUARD, MAX_FUNCTION_CALLS } from '../utils/constants.js';
+import { LRUCache } from 'lru-cache';
+
+const itineraryCache = new LRUCache<string, any[]>({
+  max: 500,
+  ttl: 1000 * 60 * 60 * 24 // 24 hours
+});
 
 export interface Constraints {
   budgetTotal: number;
@@ -182,6 +188,13 @@ function normalizeItinerary(parsedJson: any) {
 }
 
 export async function generateItinerary(slots: TravelSlots, constraints: Constraints, preferences: Preferences) {
+  const cacheKey = JSON.stringify({ slots, constraints, preferences });
+  const cachedItinerary = itineraryCache.get(cacheKey);
+  if (cachedItinerary) {
+    console.log("Serving itinerary from cache");
+    return cachedItinerary;
+  }
+
   const systemInstruction = [
     "You are TripPal, an expert Indian travel planner with deep local knowledge.",
     "TODAY: " + new Date().toISOString(),
@@ -222,7 +235,9 @@ export async function generateItinerary(slots: TravelSlots, constraints: Constra
     if (!parsedJson) {
        throw new Error("Parsed JSON is null");
     }
-    return normalizeItinerary(parsedJson);
+    const finalItinerary = normalizeItinerary(parsedJson);
+    itineraryCache.set(cacheKey, finalItinerary);
+    return finalItinerary;
   } catch (error) {
     throw new Error("Failed to parse LLM itinerary response: " + String(error));
   }

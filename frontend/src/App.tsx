@@ -6,6 +6,11 @@ import { Plane, Globe } from 'lucide-react';
 import { INITIAL_GREETING, INITIAL_SUGGESTIONS, MAX_HISTORY_TURNS } from './utils/constants';
 import { sanitizeInput } from './utils/pureLogic';
 
+/**
+ * The main application component for TripPal.
+ * Manages chat state, user intents, and the itinerary generation lifecycle.
+ * @returns {JSX.Element} The rendered application layout.
+ */
 function App() {
   const [messages, setMessages] = useState<ChatMessage[]>([{
     id: '1',
@@ -28,6 +33,10 @@ function App() {
     };
   }, []);
 
+  /**
+   * Prompts the user for missing required travel slots.
+   * @param {TravelSlots} slots - The current travel slots containing missing properties.
+   */
   const processMissingSlots = (slots: TravelSlots) => {
     const slotNames: Record<string, string> = {
       destination: "Destination 🌍",
@@ -48,6 +57,12 @@ function App() {
     setMessages(prev => [...prev, replyMsg]);
   };
 
+  /**
+   * Handles the itinerary generation process by calling the backend API.
+   * Updates chat messages with loading states and the final itinerary result.
+   * @param {TravelSlots} slots - The fully populated travel slots for the trip.
+   * @param {AbortSignal} signal - Signal to abort the network request if needed.
+   */
   const processItinerary = async (slots: TravelSlots, signal: AbortSignal) => {
     const isModify = slots.intent === 'modify_trip';
     
@@ -81,8 +96,12 @@ function App() {
     setMessages(prev => [...prev, doneMsg]);
   };
 
+  /**
+   * Handles non-trip planning intents by prompting the user to ask something relevant.
+   * @param {string} intent - The out-of-scope intent identified by the LLM.
+   */
   const processOtherIntent = (intent: string) => {
-    let text = "";
+    let text: string;
     if (intent === 'out_of_scope') {
       text = "I'm sorry, I don't quite understand that. 🤔 Right now, my specialty is planning amazing trips and vacations! 🗺️\n\nTry asking me something like \"Plan a 3-day trip to Goa\" and I'll make it happen!";
     } else {
@@ -99,6 +118,12 @@ function App() {
     setMessages(prev => [...prev, replyMsg]);
   };
 
+  /**
+   * Main chat submission handler.
+   * Sanitizes input, debounces requests, processes intent via the AI backend, 
+   * and deterministically merges travel slots before continuing.
+   * @param {string} rawText - The raw string input from the user.
+   */
   const handleSendMessage = useCallback(async (rawText: string) => {
     // TEST T6 — malicious input (<script>): sanitized, safe output
     // TEST T3 — long input (2000+ chars): truncated gracefully
@@ -181,8 +206,8 @@ function App() {
         } else {
           processOtherIntent(finalSlots.intent || slots.intent);
         }
-      } catch (error: any) {
-        if (error.name === 'AbortError') {
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name === 'AbortError') {
           return; // Don't show error state on intentional abort
         }
         
@@ -190,7 +215,7 @@ function App() {
         const errorMsg: ChatMessage = {
           id: (Date.now() + 1).toString(),
           sender: 'trippal',
-          text: `⚠️ Oops! Something went wrong on my end.\n\nError details: ${error.message || 'Unknown error'}\n\nPlease make sure the backend server is running and try again in a moment.`,
+          text: `⚠️ Oops! Something went wrong on my end.\n\nError details: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease make sure the backend server is running and try again in a moment.`,
           timestamp: new Date().toISOString()
         };
         setMessages(prev => [...prev, errorMsg]);

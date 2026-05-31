@@ -5,7 +5,13 @@ interface ItineraryBuilderProps {
   itinerary: DayPlan[];
 }
 
-export function ItineraryBuilder({ itinerary }: ItineraryBuilderProps) {
+import React from 'react';
+
+/**
+ * Renders the day-by-day itinerary component.
+ * Wrapped in React.memo for rendering efficiency.
+ */
+export const ItineraryBuilder = React.memo(function ItineraryBuilder({ itinerary }: ItineraryBuilderProps) {
   if (!itinerary || itinerary.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 rounded-xl p-8" style={{ background: 'rgba(255,255,255,0.02)' }} role="status">
@@ -60,7 +66,7 @@ export function ItineraryBuilder({ itinerary }: ItineraryBuilderProps) {
     </article>
   );
 
-  const renderTimeSlot = (title: string, activities: Activity[], Icon: any, gradientFrom: string, gradientTo: string) => {
+  const renderTimeSlot = (title: string, activities: Activity[], Icon: React.ElementType, gradientFrom: string, gradientTo: string) => {
     if (!activities || activities.length === 0) return null;
     return (
       <section aria-labelledby={`timeslot-${title.toLowerCase()}`}>
@@ -122,4 +128,4 @@ export function ItineraryBuilder({ itinerary }: ItineraryBuilderProps) {
       ))}
     </div>
   );
-}
+});

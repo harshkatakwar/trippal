@@ -2,6 +2,12 @@ import { getModel } from './geminiClient.js';
 import { TravelSlotsSchema, TravelSlots } from '../types/travel.js';
 import { sanitizeInput, extractJsonFromMarkdown } from '../utils/pureLogic.js';
 import { PROMPT_INJECTION_GUARD } from '../utils/constants.js';
+import { LRUCache } from 'lru-cache';
+
+const intentCache = new LRUCache<string, TravelSlots>({
+  max: 500,
+  ttl: 1000 * 60 * 60 * 24 // 24 hours
+});
 
 const getSystemInstruction = () => `
 You are a slot extractor for a travel planning app. 
@@ -36,6 +42,13 @@ export async function classifyAndExtract(userMessage: string, conversationHistor
   // Pass the full conversation history (capped at MAX_HISTORY_TURNS by frontend)
   const prompt = "History:\n" + conversationHistory.join("\n") + "\n\nUser: " + sanitizedMessage;
 
+  const cacheKey = prompt;
+  const cachedSlots = intentCache.get(cacheKey);
+  if (cachedSlots) {
+    console.log("Serving intent from cache");
+    return cachedSlots;
+  }
+
   const model = getModel(getSystemInstruction());
   
   const result = await model.generateContent(prompt);
@@ -50,7 +63,9 @@ export async function classifyAndExtract(userMessage: string, conversationHistor
         throw new Error("Missing required 'intent' key in parsed JSON");
     }
 
-    return TravelSlotsSchema.parse(parsedSlots);
+    const finalSlots = TravelSlotsSchema.parse(parsedSlots);
+    intentCache.set(cacheKey, finalSlots);
+    return finalSlots;
   } catch (error) {
     throw new Error("ValidationError: Failed to parse or validate slots. " + String(error));
   }

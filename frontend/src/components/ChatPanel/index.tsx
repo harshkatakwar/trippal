@@ -83,7 +83,11 @@ function ThinkingIndicator() {
   );
 }
 
-export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps) {
+/**
+ * Displays the chat interface including message history and input field.
+ * Wrapped in React.memo to prevent unnecessary re-renders when parent state changes.
+ */
+export const ChatPanel = React.memo(function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -104,7 +108,7 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      handleSubmit(e as any);
+      handleSubmit(e);
     }
   }, [handleSubmit]);
 
@@ -145,6 +149,7 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
         className="flex-1 overflow-y-auto px-4 pt-4 pb-12 space-y-3"
         role="log" 
         aria-live="polite"
+        aria-atomic="false"
       >
         {messages.map((msg) => (
         <React.Fragment key={msg.id}>
@@ -240,4 +245,4 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
       `}</style>
     </section>
   );
-}
+});
