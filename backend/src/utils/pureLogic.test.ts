@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeInput, extractJsonFromMarkdown } from './pureLogic';
-import { MAX_INPUT_LENGTH } from './constants';
+import { sanitizeInput, extractJsonFromMarkdown } from './pureLogic.js';
+import { MAX_INPUT_LENGTH } from './constants.js';
 
 describe('Backend pureLogic', () => {
   describe('sanitizeInput', () => {
