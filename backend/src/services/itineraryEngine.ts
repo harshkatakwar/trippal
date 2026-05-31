@@ -174,17 +174,25 @@ async function processFunctionCalls(chat: any, initialResponse: any) {
 function normalizeItinerary(parsedJson: any) {
   const itineraryArray = Array.isArray(parsedJson) ? parsedJson : (parsedJson.itinerary || parsedJson.days || [parsedJson]);
   
-  return itineraryArray.map((dayPlan: Record<string, any>, index: number) => ({
-    day: dayPlan.day || index + 1,
-    date: dayPlan.date || new Date(Date.now() + index * 86400000).toISOString().split('T')[0],
-    theme: dayPlan.theme || "Exploration",
-    morning: Array.isArray(dayPlan.morning) ? dayPlan.morning : [],
-    afternoon: Array.isArray(dayPlan.afternoon) ? dayPlan.afternoon : [],
-    evening: Array.isArray(dayPlan.evening) ? dayPlan.evening : [],
-    accommodation: dayPlan.accommodation || "To be decided",
-    estimatedCostInr: dayPlan.estimatedCostInr || dayPlan.estimated_cost_inr || 0,
-    transitNotes: dayPlan.transitNotes || dayPlan.transit_notes || ""
-  }));
+  return itineraryArray.map((dayPlan: Record<string, any>, index: number) => {
+    const isLastDay = index === itineraryArray.length - 1;
+    let accommodation = dayPlan.accommodation || "To be decided";
+    if (isLastDay) {
+      accommodation = "In your comfort zone";
+    }
+
+    return {
+      day: dayPlan.day || index + 1,
+      date: dayPlan.date || new Date(Date.now() + index * 86400000).toISOString().split('T')[0],
+      theme: dayPlan.theme || "Exploration",
+      morning: Array.isArray(dayPlan.morning) ? dayPlan.morning : [],
+      afternoon: Array.isArray(dayPlan.afternoon) ? dayPlan.afternoon : [],
+      evening: Array.isArray(dayPlan.evening) ? dayPlan.evening : [],
+      accommodation,
+      estimatedCostInr: dayPlan.estimatedCostInr || dayPlan.estimated_cost_inr || 0,
+      transitNotes: dayPlan.transitNotes || dayPlan.transit_notes || ""
+    };
+  });
 }
 
 export async function generateItinerary(slots: TravelSlots, constraints: Constraints, preferences: Preferences) {
