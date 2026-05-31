@@ -8,6 +8,7 @@ You are a slot extractor for a travel planning app.
 TODAY'S DATE: ${new Date().toISOString()}
 
 Your task is to classify the user's intent and extract travel slots into a valid JSON object.
+Extract all travel slots mentioned ANYWHERE in the conversation history or the latest user message. Do not forget slots that were provided earlier.
 Convert relative dates to ISO 8601 using today's date.
 Convert shorthand budgets (e.g., "30k" to 30000, "1 lakh" to 100000).
 Use null for unstated values.
@@ -32,9 +33,8 @@ ${PROMPT_INJECTION_GUARD}
 export async function classifyAndExtract(userMessage: string, conversationHistory: string[]): Promise<TravelSlots> {
   const sanitizedMessage = sanitizeInput(userMessage);
   
-  // Pass the last four conversation history items
-  const recentHistory = conversationHistory.slice(-4);
-  const prompt = "History:\n" + recentHistory.join("\n") + "\n\nUser: " + sanitizedMessage;
+  // Pass the full conversation history (capped at MAX_HISTORY_TURNS by frontend)
+  const prompt = "History:\n" + conversationHistory.join("\n") + "\n\nUser: " + sanitizedMessage;
 
   const model = getModel(getSystemInstruction());
   
