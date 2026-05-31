@@ -130,7 +130,11 @@ function App() {
 
         // Ensure strictly required fields aren't undefined to prevent Zod Validation Error
         mergedSlots.confidence = slots.confidence || 1;
-        mergedSlots.preferences = slots.preferences || [];
+        // Accumulate preferences instead of overwriting
+        const existingPrefs = currentSlots.preferences || [];
+        const newPrefs = slots.preferences || [];
+        mergedSlots.preferences = Array.from(new Set([...existingPrefs, ...newPrefs]));
+        
         mergedSlots.reasoning = slots.reasoning || "Merged";
         
         // Ensure nullable fields are null, not undefined
@@ -141,7 +145,7 @@ function App() {
         mergedSlots.numTravelers = mergedSlots.numTravelers || null;
         mergedSlots.budgetInr = mergedSlots.budgetInr || null;
 
-        if (mergedSlots.intent === 'plan_trip') {
+        if (mergedSlots.intent === 'plan_trip' || mergedSlots.intent === 'modify_trip') {
           const missing = [];
           if (!mergedSlots.destination) missing.push('destination');
           if (!mergedSlots.origin) missing.push('origin');
@@ -154,7 +158,7 @@ function App() {
         setCurrentSlots(mergedSlots);
         const finalSlots = mergedSlots as TravelSlots;
 
-        if (finalSlots.intent === 'plan_trip') {
+        if (finalSlots.intent === 'plan_trip' || finalSlots.intent === 'modify_trip') {
           if (finalSlots.missingSlots && finalSlots.missingSlots.length > 0) {
             processMissingSlots(finalSlots);
           } else {
