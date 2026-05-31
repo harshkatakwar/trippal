@@ -3,12 +3,13 @@ import { ChatPanel } from './components/ChatPanel';
 import { ItineraryBuilder } from './components/ItineraryBuilder';
 import type { ChatMessage, DayPlan } from './types/travel';
 import { classifyIntent, generateItinerary } from './services/api';
+import { Plane, Globe } from 'lucide-react';
 
 function App() {
   const [messages, setMessages] = useState<ChatMessage[]>([{
     id: '1',
     sender: 'trippal',
-    text: 'Hi! I am TripPal, your personal travel planner. Where would you like to go?',
+    text: "Hey there! 👋 I'm TripPal, your AI travel buddy.\n\nTell me where you'd like to go, and I'll craft the perfect itinerary for you. Just say something like:\n\n🏖️ \"Plan a 5-day trip to Goa\"\n🏔️ \"I want to visit Manali next week\"\n🕌 \"Weekend getaway to Jaipur under 20k\"",
     timestamp: new Date().toISOString()
   }]);
   
@@ -16,7 +17,6 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendMessage = async (text: string) => {
-    // 1. Add user message to chat
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       sender: 'user',
@@ -27,14 +27,12 @@ function App() {
     setIsLoading(true);
 
     try {
-      // 2. Classify Intent and Extract Slots
       const history = messages.map(m => `${m.sender}: ${m.text}`);
       const slots = await classifyIntent(text, history);
 
       if (slots.intent === 'plan_trip') {
         if (slots.missingSlots && slots.missingSlots.length > 0) {
-          // Ask for missing info
-          const replyText = `I can help with that! However, I still need to know: ${slots.missingSlots.join(', ')}.`;
+          const replyText = `Almost there! 🎯 I just need a few more details:\n\n${slots.missingSlots.map(s => `• ${s}`).join('\n')}\n\nFeel free to tell me everything at once!`;
           const replyMsg: ChatMessage = {
             id: (Date.now() + 1).toString(),
             sender: 'trippal',
@@ -43,11 +41,10 @@ function App() {
           };
           setMessages(prev => [...prev, replyMsg]);
         } else {
-          // 3. Generate Itinerary
           const statusMsg: ChatMessage = {
             id: (Date.now() + 1).toString(),
             sender: 'trippal',
-            text: 'I have all the details! Generating your personalized itinerary now...',
+            text: '🎉 I have everything I need! Crafting your perfect itinerary now...\n\nThis usually takes 10-20 seconds.',
             timestamp: new Date().toISOString()
           };
           setMessages(prev => [...prev, statusMsg]);
@@ -58,7 +55,7 @@ function App() {
           const doneMsg: ChatMessage = {
             id: (Date.now() + 2).toString(),
             sender: 'trippal',
-            text: 'Your itinerary is ready! You can review it on the right panel.',
+            text: '✅ Your itinerary is ready!\n\nCheck out the detailed day-by-day plan on the right panel. You can scroll through each day to see activities, costs, and recommendations.\n\nHappy travels! 🌍✈️',
             timestamp: new Date().toISOString()
           };
           setMessages(prev => [...prev, doneMsg]);
@@ -67,7 +64,7 @@ function App() {
          const replyMsg: ChatMessage = {
             id: (Date.now() + 1).toString(),
             sender: 'trippal',
-            text: `I understood your intent as: ${slots.intent}. Currently I am only fully equipped to plan new trips. Let's plan a trip!`,
+            text: `I understood your intent as "${slots.intent}". Right now I'm best at planning new trips! 🗺️\n\nTry something like "Plan a trip to Goa" and I'll make it happen!`,
             timestamp: new Date().toISOString()
           };
           setMessages(prev => [...prev, replyMsg]);
@@ -77,7 +74,7 @@ function App() {
       const errorMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         sender: 'trippal',
-        text: 'Sorry, I encountered an error while processing your request. Please ensure the backend is running and the API key is valid.',
+        text: '⚠️ Oops! Something went wrong on my end.\n\nPlease make sure the backend server is running and try again in a moment.',
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, errorMsg]);
@@ -87,16 +84,27 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-sans">
-      <header className="border-b bg-card px-6 py-4 shadow-sm flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-primary">TripPal</h1>
-          <p className="text-sm text-muted-foreground">Intelligent Travel Experience Engine</p>
+    <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, #0f0a2e 0%, #1a1145 30%, #0d1b3e 70%, #0a0f24 100%)' }}>
+      {/* Header */}
+      <header className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
+            <Plane size={20} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-white">TripPal</h1>
+            <p className="text-xs font-medium" style={{ color: 'rgba(165,180,252,0.8)' }}>Intelligent Travel Experience Engine</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <Globe size={14} style={{ color: '#a5b4fc' }} />
+          <span className="text-xs font-medium" style={{ color: '#a5b4fc' }}>Powered by Gemini 3.5 Flash</span>
         </div>
       </header>
       
-      <main className="flex-1 flex overflow-hidden p-6 gap-6 max-w-[1600px] w-full mx-auto">
-        <div className="w-[400px] flex-shrink-0 flex flex-col">
+      {/* Main Content */}
+      <main className="flex-1 flex overflow-hidden p-4 gap-4 max-w-[1600px] w-full mx-auto">
+        <div className="w-[420px] flex-shrink-0 flex flex-col">
           <ChatPanel 
             messages={messages} 
             onSendMessage={handleSendMessage} 
@@ -105,8 +113,15 @@ function App() {
         </div>
         
         <div className="flex-1 flex flex-col min-w-0">
-          <div className="bg-card rounded-lg border shadow-sm h-full flex flex-col p-6 overflow-hidden">
-            <h2 className="text-2xl font-semibold mb-6 flex-shrink-0">Your Itinerary</h2>
+          <div className="rounded-2xl shadow-lg h-full flex flex-col p-6 overflow-hidden border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)' }}>
+            <h2 className="text-xl font-bold mb-5 flex-shrink-0 flex items-center gap-2" style={{ color: 'white' }}>
+              <span style={{ background: 'linear-gradient(135deg, #a78bfa, #818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Your Itinerary</span>
+              {itinerary.length > 0 && (
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: 'rgba(79,70,229,0.2)', color: '#a5b4fc' }}>
+                  {itinerary.length} days
+                </span>
+              )}
+            </h2>
             <ItineraryBuilder itinerary={itinerary} />
           </div>
         </div>
