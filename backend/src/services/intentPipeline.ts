@@ -45,7 +45,7 @@ export async function classifyAndExtract(userMessage: string, conversationHistor
   const cacheKey = prompt;
   const cachedSlots = intentCache.get(cacheKey);
   if (cachedSlots) {
-    console.log("Serving intent from cache");
+    console.debug('[intentCache] Serving from cache:', cacheKey.substring(0, 60));
     return cachedSlots;
   }
 

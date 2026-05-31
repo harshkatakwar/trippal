@@ -31,10 +31,11 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     res.json(itinerary);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ error: 'Validation Error', details: (error as any).errors });
+      res.status(400).json({ error: 'Validation Error', details: error.issues });
       return;
     }
-    console.error(error); res.status(500).json({ error: 'Internal Server Error', message: error instanceof Error ? error.message : "Unknown error" });
+    console.error('[itinerary] Unexpected error:', error);
+    res.status(500).json({ error: 'Internal Server Error', message: error instanceof Error ? error.message : "Unknown error" });
   }
 });
 

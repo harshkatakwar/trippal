@@ -209,7 +209,7 @@ export async function generateItinerary(slots: TravelSlots, constraints: Constra
   const cacheKey = JSON.stringify({ slots, constraints, preferences });
   const cachedItinerary = itineraryCache.get(cacheKey);
   if (cachedItinerary) {
-    console.log("Serving itinerary from cache");
+    console.debug('[itineraryCache] Cache hit for destination:', slots.destination);
     return cachedItinerary;
   }
 
