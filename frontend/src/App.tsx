@@ -17,6 +17,7 @@ function App() {
   }]);
   
   const [itinerary, setItinerary] = useState<DayPlan[]>([]);
+  const [currentSlots, setCurrentSlots] = useState<Partial<TravelSlots>>({});
   const [isLoading, setIsLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -120,14 +121,38 @@ function App() {
         // TEST T1 — happy path: valid input → correct output rendered
         const slots = await classifyIntent(text, recentHistory, signal);
 
-        if (slots.intent === 'plan_trip') {
-          if (slots.missingSlots && slots.missingSlots.length > 0) {
-            processMissingSlots(slots);
+        // DETERMINISTIC SLOT MERGING
+        // AI models frequently suffer from recency bias in long context windows and output null for past slots.
+        // We merge extracted slots locally to ensure nothing is ever forgotten.
+        const mergedSlots = { ...currentSlots };
+        if (slots.intent && slots.intent !== 'out_of_scope') mergedSlots.intent = slots.intent;
+        if (slots.destination) mergedSlots.destination = slots.destination;
+        if (slots.origin) mergedSlots.origin = slots.origin;
+        if (slots.travelDate) mergedSlots.travelDate = slots.travelDate;
+        if (slots.returnDate) mergedSlots.returnDate = slots.returnDate;
+        if (slots.numTravelers) mergedSlots.numTravelers = slots.numTravelers;
+        if (slots.budgetInr) mergedSlots.budgetInr = slots.budgetInr;
+
+        if (mergedSlots.intent === 'plan_trip') {
+          const missing = [];
+          if (!mergedSlots.destination) missing.push('destination');
+          if (!mergedSlots.origin) missing.push('origin');
+          if (!mergedSlots.travelDate) missing.push('travelDate');
+          if (!mergedSlots.numTravelers) missing.push('numTravelers');
+          mergedSlots.missingSlots = missing;
+        }
+
+        setCurrentSlots(mergedSlots);
+        const finalSlots = mergedSlots as TravelSlots;
+
+        if (finalSlots.intent === 'plan_trip') {
+          if (finalSlots.missingSlots && finalSlots.missingSlots.length > 0) {
+            processMissingSlots(finalSlots);
           } else {
-            await processItinerary(slots, signal);
+            await processItinerary(finalSlots, signal);
           }
         } else {
-          processOtherIntent(slots.intent);
+          processOtherIntent(finalSlots.intent || slots.intent);
         }
       } catch (error: any) {
         if (error.name === 'AbortError') {
@@ -148,7 +173,7 @@ function App() {
         }
       }
     }, 500); // 500ms debounce
-  }, [messages]);
+  }, [messages, currentSlots]);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(135deg, #0f0a2e 0%, #1a1145 30%, #0d1b3e 70%, #0a0f24 100%)' }}>
