@@ -1,5 +1,18 @@
 import { z } from 'zod';
 
+const flexibleNumber = z.preprocess(
+  (val) => {
+    if (val === null || val === undefined) return null;
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+       const parsed = parseFloat(val.replace(/[^0-9.]/g, ''));
+       return isNaN(parsed) ? null : parsed;
+    }
+    return null;
+  },
+  z.number().nullable()
+);
+
 export const TravelSlotsSchema = z.object({
   intent: z.enum([
     'plan_trip',
@@ -15,8 +28,8 @@ export const TravelSlotsSchema = z.object({
   origin: z.string().nullable(),
   travelDate: z.string().nullable(), // ISO string
   returnDate: z.string().nullable(), // ISO string
-  numTravelers: z.number().nullable(),
-  budgetInr: z.number().nullable(),
+  numTravelers: flexibleNumber,
+  budgetInr: flexibleNumber,
   preferences: z.array(z.string()),
   missingSlots: z.array(z.string()),
   reasoning: z.string(),

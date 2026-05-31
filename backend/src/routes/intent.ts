@@ -31,7 +31,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
        res.status(400).json({ error: 'Validation Error', details: (error as any).errors });
        return;
     }
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error(error); res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
