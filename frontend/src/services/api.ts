@@ -25,10 +25,12 @@ export const generateItinerary = async (
   signal?: AbortSignal
 ): Promise<DayPlan[]> => {
   // Pass some dummy constraints for now until we build the constraint UI
+  const isValidDate = (d: any) => d && !isNaN(Date.parse(d));
+  
   const dummyConstraints = {
     budgetTotal: slots.budgetInr || DEFAULT_BUDGET,
-    departure: slots.travelDate || new Date().toISOString(),
-    return: slots.returnDate || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
+    departure: isValidDate(slots.travelDate) ? new Date(slots.travelDate as string).toISOString() : new Date().toISOString(),
+    return: isValidDate(slots.returnDate) ? new Date(slots.returnDate as string).toISOString() : new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
   };
   
   const res = await fetch(`${API_BASE}/itinerary`, {
