@@ -222,7 +222,11 @@ export async function generateItinerary(slots: TravelSlots, constraints: Constra
     ? JSON.stringify(preferences) 
     : (slots.preferences?.join(", ") || "general sightseeing");
 
-  const prompt = "Generate a detailed day-by-day itinerary. Return ONLY a JSON array.\n\nTrip details:\n- Destination: " + (slots.destination || "Unknown") + "\n- Origin: " + (slots.origin || "Unknown") + "\n- Dates: " + (slots.travelDate || "today") + " to " + (slots.returnDate || "3 days from now") + "\n- Travelers: " + (slots.numTravelers || 2) + "\n- Budget: ₹" + (slots.budgetInr || 50000) + "\n- Preferences: " + prefString;
+  const originPrompt = slots.origin 
+    ? `\n- CRITICAL: The very first activity on Day 1 MUST be the journey from ${slots.origin} to ${slots.destination}. The very last activity on the final day MUST be the journey from ${slots.destination} back to ${slots.origin}. Include realistic transit times (flights/trains) and costs in these activities.` 
+    : "";
+
+  const prompt = "Generate a detailed day-by-day itinerary. Return ONLY a JSON array.\n\nTrip details:\n- Destination: " + (slots.destination || "Unknown") + "\n- Origin: " + (slots.origin || "Unknown") + "\n- Dates: " + (slots.travelDate || "today") + " to " + (slots.returnDate || "3 days from now") + "\n- Travelers: " + (slots.numTravelers || 2) + "\n- Budget: ₹" + (slots.budgetInr || 50000) + "\n- Preferences: " + prefString + originPrompt;
 
   const initialResponse = await chat.sendMessage(prompt);
   const finalResponse = await processFunctionCalls(chat, initialResponse);
