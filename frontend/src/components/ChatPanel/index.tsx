@@ -141,7 +141,7 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
       
       {/* Messages */}
       <div 
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
+        className="flex-1 overflow-y-auto px-4 pt-4 pb-12 space-y-3"
         role="log" 
         aria-live="polite"
       >
@@ -186,6 +186,7 @@ export function ChatPanel({ messages, onSendMessage, isLoading }: ChatPanelProps
         </React.Fragment>
         ))}
         {isLoading && <ThinkingIndicator />}
+        <div className="h-8 flex-shrink-0" aria-hidden="true" />
         <div ref={messagesEndRef} />
       </div>
 

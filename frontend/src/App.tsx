@@ -30,18 +30,24 @@ function App() {
   }, []);
 
   const processMissingSlots = (slots: TravelSlots) => {
-    const replyText = `Almost there! 🎯 I just need a few more details:\n\n${slots.missingSlots.map(s => `• ${s}`).join('\n')}\n\nFeel free to tell me everything at once!`;
+    const missingMap: Record<string, { text: string; suggestions: string[] }> = {
+      destination: { text: "Where would you like to go? 🌍", suggestions: ["Goa", "Manali", "Kerala", "Jaipur"] },
+      origin: { text: "Where are you traveling from? 🛫", suggestions: ["Delhi", "Mumbai", "Bangalore", "Chennai"] },
+      travelDate: { text: "When are you planning to start your trip? 📅", suggestions: ["Tomorrow", "Next weekend", "Next month"] },
+      returnDate: { text: "How long is your trip, or when will you return? 🗓️", suggestions: ["3 days", "5 days", "1 week"] },
+      numTravelers: { text: "How many people are traveling? 👥", suggestions: ["Just me", "2 people", "4 people", "Family of 4"] },
+      budgetInr: { text: "What is your total budget for this trip? 💰", suggestions: ["20,000", "50,000", "1 Lakh", "No strict budget"] }
+    };
+
+    const nextMissing = slots.missingSlots[0];
+    const data = missingMap[nextMissing] || { text: "Could you provide a bit more detail? ✨", suggestions: [] };
+
     const replyMsg: ChatMessage = {
       id: (Date.now() + 1).toString(),
       sender: 'trippal',
-      text: replyText,
+      text: data.text,
       timestamp: new Date().toISOString(),
-      suggestions: [
-        `I'm starting from Delhi`,
-        `Next weekend`,
-        `For 2 people`,
-        `My budget is 50k`
-      ]
+      suggestions: data.suggestions
     };
     setMessages(prev => [...prev, replyMsg]);
   };
