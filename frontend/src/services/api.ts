@@ -52,7 +52,7 @@ export const generateItinerary = async (
   const res = await fetch(`${API_BASE}/itinerary`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ slots, constraints: dummyConstraints, preferences: {} }),
+    body: JSON.stringify({ slots, constraints: dummyConstraints, preferences: slots.preferences ? { style: slots.preferences.join(', ') } : {} }),
     signal
   });
   
