@@ -19,7 +19,7 @@ function App() {
     timestamp: new Date().toISOString(),
     suggestions: INITIAL_SUGGESTIONS
   }]);
-  
+
   const [currentSlots, setCurrentSlots] = useState<Partial<TravelSlots>>({});
   const [isLoading, setIsLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -65,23 +65,23 @@ function App() {
    */
   const processItinerary = async (slots: TravelSlots, signal: AbortSignal) => {
     const isModify = slots.intent === 'modify_trip';
-    
+
     const statusMsg: ChatMessage = {
       id: (Date.now() + 1).toString(),
       sender: 'trippal',
       text: isModify
-        ? 'Got it! 🛠️ Recrafting your itinerary with those updates...\n\nThis usually takes 10-20 seconds.'
-        : '🎉 I have everything I need! Crafting your perfect itinerary now...\n\nThis usually takes 10-20 seconds.',
+        ? 'Got it! 🛠️ Recrafting your itinerary with those updates...\n\nThis usually takes few seconds.'
+        : '🎉 I have everything I need! Crafting your perfect itinerary now...\n\nThis usually takes few seconds.',
       timestamp: new Date().toISOString()
     };
     setMessages(prev => [...prev, statusMsg]);
-    
+
     const newItinerary = await generateItinerary(slots, signal);
-    
+
     const doneMsg: ChatMessage = {
       id: (Date.now() + 2).toString(),
       sender: 'trippal',
-      text: isModify 
+      text: isModify
         ? '✅ Your updated itinerary is ready!\n\nHappy travels! 🌍✈️'
         : '✅ Your itinerary is ready!\n\nHappy travels! 🌍✈️',
       timestamp: new Date().toISOString(),
@@ -128,7 +128,7 @@ function App() {
     // TEST T6 — malicious input (<script>): sanitized, safe output
     // TEST T3 — long input (2000+ chars): truncated gracefully
     const text = sanitizeInput(rawText);
-    
+
     // TEST T2 — empty input: blocked early, no API call fired
     if (!text.trim()) return;
 
@@ -173,9 +173,9 @@ function App() {
         const existingPrefs = currentSlots.preferences || [];
         const newPrefs = slots.preferences || [];
         mergedSlots.preferences = Array.from(new Set([...existingPrefs, ...newPrefs]));
-        
+
         mergedSlots.reasoning = slots.reasoning || "Merged";
-        
+
         // Ensure nullable fields are null, not undefined
         mergedSlots.destination = mergedSlots.destination || null;
         mergedSlots.origin = mergedSlots.origin || null;
@@ -210,7 +210,7 @@ function App() {
         if (error instanceof Error && error.name === 'AbortError') {
           return; // Don't show error state on intentional abort
         }
-        
+
         // TEST T4 — network/API error: user-friendly message shown, no crash
         const errorMsg: ChatMessage = {
           id: (Date.now() + 1).toString(),
@@ -245,14 +245,14 @@ function App() {
           <span className="text-xs font-medium text-indigo-300">Powered by Gemini 3.5 Flash</span>
         </div>
       </header>
-      
+
       {/* Main Content */}
       <main className="flex-1 flex overflow-hidden p-4 gap-4 w-full max-w-4xl mx-auto flex-col">
         <div className="flex-1 flex flex-col h-full w-full transition-all duration-300">
-          <ChatPanel 
-            messages={messages} 
-            onSendMessage={handleSendMessage} 
-            isLoading={isLoading} 
+          <ChatPanel
+            messages={messages}
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
           />
         </div>
       </main>
