@@ -76,10 +76,18 @@ function App() {
   };
 
   const processOtherIntent = (intent: string) => {
+    let text = "";
+    if (intent === 'out_of_scope') {
+      text = "I'm sorry, I don't quite understand that. 🤔 Right now, my specialty is planning amazing trips and vacations! 🗺️\n\nTry asking me something like \"Plan a 3-day trip to Goa\" and I'll make it happen!";
+    } else {
+      const intentName = intent.replace(/_/g, ' ');
+      text = `I see you're looking to ${intentName}, but right now my specialty is planning brand new trips! 🗺️\n\nTry asking me something like "Plan a 3-day trip to Goa" and I'll make it happen!`;
+    }
+
     const replyMsg: ChatMessage = {
       id: (Date.now() + 1).toString(),
       sender: 'trippal',
-      text: `I understood your intent as "${intent}". Right now I'm best at planning new trips! 🗺️\n\nTry something like "Plan a trip to Goa" and I'll make it happen!`,
+      text,
       timestamp: new Date().toISOString()
     };
     setMessages(prev => [...prev, replyMsg]);
