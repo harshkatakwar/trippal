@@ -1,6 +1,6 @@
 import type { TravelSlots, DayPlan } from '../types/travel';
 
-const API_BASE = 'http://localhost:3000/api';
+const API_BASE = 'https://trippal-xh12.onrender.com/api';
 
 export const classifyIntent = async (userMessage: string, conversationHistory: string[] = []): Promise<TravelSlots> => {
   const res = await fetch(`${API_BASE}/intent`, {
